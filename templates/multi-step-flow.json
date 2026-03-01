@@ -1,0 +1,72 @@
+{
+  "name": "Multi-Step Flow",
+  "description": "Complex flow with multiple decision points and detailed results",
+  "pattern": "suggestions → suggestions → results (detailed) → canvas",
+  "steps": 4,
+  "userMessage": "[User's initial request]",
+  "template": {
+    "steps": [
+      {
+        "id": "step1",
+        "type": "suggestions",
+        "question": "[First decision point?]",
+        "options": [
+          {"label": "[Option A]", "value": "a", "icon": "[SVG]"},
+          {"label": "[Option B]", "value": "b", "icon": "[SVG]"},
+          {"label": "[Option C]", "value": "c", "icon": "[SVG]"}
+        ]
+      },
+      {
+        "id": "step2",
+        "type": "suggestions",
+        "question": "[Second decision point?]",
+        "options": [
+          {"label": "[Choice 1]", "value": "1", "icon": "[SVG]"},
+          {"label": "[Choice 2]", "value": "2", "icon": "[SVG]"},
+          {"label": "[Choice 3]", "value": "3", "icon": "[SVG]"}
+        ]
+      },
+      {
+        "id": "step3",
+        "type": "results",
+        "question": "[Results based on previous choices]",
+        "showInsights": true,
+        "results": [
+          {
+            "id": "result1",
+            "detailed": true,
+            "title": "[Context-aware result title]",
+            "status": "current",
+            "details": "[Explanation based on user's choices]",
+            "meta": "[Relevant metadata]"
+          },
+          {
+            "id": "result2",
+            "detailed": true,
+            "title": "[Alternative option]",
+            "details": "[Why this might be relevant]",
+            "meta": "[Additional context]"
+          },
+          {
+            "id": "result3",
+            "detailed": true,
+            "title": "[Third option]",
+            "details": "[Explanation]",
+            "meta": "[Context]"
+          }
+        ]
+      },
+      {
+        "id": "confirm",
+        "type": "canvas",
+        "question": "[Final confirmation?]",
+        "docTitle": "[Preview title]",
+        "docName": "[Name based on user's selections]",
+        "actionLabel": "[Final action]",
+        "actionValue": "complete",
+        "showInsights": false
+      }
+    ],
+    "onComplete": "triggerSuccess('[Contextual success message based on flow]')"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "Detailed Search Flow",
+  "description": "Search with detailed results showing status, roles, and context",
+  "pattern": "results (detailed) → canvas",
+  "steps": 2,
+  "userMessage": "[User's search query]",
+  "template": {
+    "steps": [
+      {
+        "id": "search-results",
+        "type": "results",
+        "question": "[Results summary]",
+        "showInsights": true,
+        "results": [
+          {
+            "id": "item1",
+            "detailed": true,
+            "title": "[Item title or name]",
+            "status": "current",
+            "role": "[Optional role badge]",
+            "details": "[Detailed explanation or context]",
+            "meta": "[Additional metadata or temporal info]"
+          },
+          {
+            "id": "item2",
+            "detailed": true,
+            "title": "[Item title or name]",
+            "status": "archived",
+            "details": "[Detailed explanation or context]",
+            "meta": "[Additional metadata or temporal info]"
+          }
+        ]
+      },
+      {
+        "id": "action",
+        "type": "canvas",
+        "question": "[Action question?]",
+        "docTitle": "[Document type shown in preview]",
+        "docName": "[Document name]",
+        "actionLabel": "[Action to perform]",
+        "actionValue": "action"
+      }
+    ],
+    "onComplete": "triggerSuccess('[Success message]')"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "Simple Selection Flow",
+  "description": "User selects from options, sees results, confirms action",
+  "pattern": "suggestions → results → canvas",
+  "steps": 3,
+  "template": {
+    "steps": [
+      {
+        "id": "select-option",
+        "type": "suggestions",
+        "question": "[Question prompting user to choose?]",
+        "options": [
+          {
+            "label": "[Option 1 label]",
+            "value": "option1",
+            "icon": "[SVG path]"
+          },
+          {
+            "label": "[Option 2 label]",
+            "value": "option2",
+            "icon": "[SVG path]"
+          },
+          {
+            "label": "[Option 3 label]",
+            "value": "option3",
+            "icon": "[SVG path]"
+          }
+        ]
+      },
+      {
+        "id": "show-results",
+        "type": "results",
+        "question": "[Question introducing results?]",
+        "showInsights": false,
+        "results": [
+          {
+            "id": "result1",
+            "quote": "[Result text with <strong>highlights</strong>]",
+            "source": "[Source or context]"
+          },
+          {
+            "id": "result2",
+            "quote": "[Result text with <strong>highlights</strong>]",
+            "source": "[Source or context]"
+          }
+        ]
+      },
+      {
+        "id": "confirm",
+        "type": "canvas",
+        "question": "[Confirmation question?]",
+        "docTitle": "[Document type]",
+        "docName": "[Document name]",
+        "actionLabel": "[Action button text]",
+        "actionValue": "confirm"
+      }
+    ],
+    "onComplete": "triggerSuccess('[Success message]')"
+  }
+}

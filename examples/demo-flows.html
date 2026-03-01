@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lolo — Dialog Component</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #ffffff;
+    --canvas: #f6f5f2;
+    --neutral-50: #ffffff;
+    --neutral-100: #f6f5f2;
+    --neutral-200: #f0eee6;
+    --neutral-800: #3d3935;
+    --text-primary: #3d3935;
+    --text-secondary: #6b665f;
+    --text-tertiary: #938d85;
+    --borders-default: #f0eee6;
+    --lavender-100: #f0ecfa;
+    --lavender-200: #e0d9f4;
+    --lavender-500: #a599d9;
+    --lavender-700: #7e6fca;
+    --lavender-800: #6457a6;
+    --user-bubble: #4E7195;
+    --user-bubble-dark: #3d5a76;
+    --surfaces-default: #ffffff;
+    --surfaces-canvas: #f6f5f2;
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-6: 24px; --sp-8: 32px;
+    --r-sm: 4px; --r-md: 6px; --r-lg: 8px; --r-xl: 12px; --r-2xl: 16px; --r-full: 9999px;
+    --shadow-xxs: 0px 1px 1px rgba(16,24,40,0.07), 1px 1px 2px rgba(0,0,0,0.04);
+    --shadow-xl: 0px 12px 24px 4px rgba(16,24,40,0.07);
+    --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: #faf8f5;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ─── Background scene ─── */
+  .scene {
+    position: fixed;
+    inset: 0;
+    background: var(--canvas);
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .scene-content {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    opacity: 0.5;
+  }
+
+  /* ─── Dialog container ─── */
+  .dialog {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(640px, calc(100vw - 32px));
+    background: var(--white);
+    border-radius: var(--r-2xl);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: border-radius 0.3s ease, box-shadow 0.3s ease, bottom 0.3s ease, width 0.3s ease;
+  }
+
+  @media (max-width: 520px) {
+    .dialog {
+      bottom: 16px;
+    }
+    .suggestions-row {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .suggestions-row::-webkit-scrollbar { display: none; }
+    .suggestion-chip {
+      flex: 0 0 auto;
+      min-width: 160px;
+    }
+    .action-suggestions {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .action-suggestions::-webkit-scrollbar { display: none; }
+    .action-chip { flex-shrink: 0; }
+  }
+
+  .dialog.fullscreen {
+    position: fixed;
+    inset: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* ─── Header ─── */
+  .dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-2) var(--sp-3);
+    min-height: 52px;
+    flex-shrink: 0;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* ─── Logo ─── */
+  .logo {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo svg {
+    width: 20px;
+    height: 21px;
+  }
+
+  /* ─── Header text + shimmer thinking ─── */
+  .header-text {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 28px;
+    letter-spacing: -0.4px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.3s ease;
+  }
+  .header-text.thinking {
+    background: linear-gradient(
+      90deg,
+      var(--text-tertiary) 0%,
+      var(--text-tertiary) 20%,
+      #c4b8f0 45%,
+      var(--lavender-500) 50%,
+      #c4b8f0 55%,
+      var(--text-tertiary) 80%,
+      var(--text-tertiary) 100%
+    );
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 2.4s ease-in-out infinite;
+    color: transparent;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% center; }
+    100% { background-position: -50% center; }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    flex-shrink: 0;
+  }
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-full);
+    border: 1px solid var(--borders-default);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .icon-btn:hover { background: var(--neutral-100); color: var(--text-primary); }
+  .icon-btn.stop { border-color: var(--lavender-200); color: var(--lavender-700); }
+  .icon-btn.stop:hover { background: var(--lavender-100); }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  /* ─── Suggestion chips ─── */
+  .suggestions-row {
+    display: flex;
+    gap: var(--sp-3);
+    padding: var(--sp-1) var(--sp-3);
+    flex-shrink: 0;
+  }
+  .suggestion-chip {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .suggestion-chip:hover { background: var(--lavender-100); border-color: var(--lavender-200); }
+  .suggestion-chip svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-secondary); }
+  .suggestion-chip span { font-size: 12px; font-weight: 400; line-height: 16px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ─── User bubble — hugs contents, steel blue ─── */
+  .user-message {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--sp-1) var(--sp-3);
+    flex-shrink: 0;
+  }
+  .user-bubble {
+    display: inline-block;
+    background: var(--user-bubble);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 20px;
+    padding: 10px 16px;
+    border-radius: 20px 20px 4px 20px;
+    max-width: 85%;
+    word-break: break-word;
+    animation: slideUpBubble 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  /* ─── Response area ─── */
+  .response-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    flex-shrink: 0;
+  }
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+  .result-row:hover { background: var(--lavender-100); }
+  .result-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-tertiary); }
+  .result-content { flex: 1; display: flex; align-items: center; gap: var(--sp-3); min-width: 0; }
+  .result-quote {
+    font-size: 14px; color: var(--text-primary); line-height: 20px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .result-quote strong { font-weight: 600; }
+  .result-source { font-size: 13px; color: var(--text-tertiary); white-space: nowrap; flex-shrink: 0; }
+  .result-source strong { font-weight: 500; color: var(--text-secondary); }
+
+  /* ─── Enhanced result row (multi-line) ─── */
+  .result-row.detailed {
+    align-items: flex-start;
+    padding: var(--sp-3);
+  }
+  .result-row.detailed .result-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-2);
+  }
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    width: 100%;
+  }
+  .result-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 20px;
+  }
+  .result-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: var(--r-sm);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .result-badge.current {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  .result-badge.archived {
+    background: var(--neutral-200);
+    color: var(--text-secondary);
+  }
+  .result-badge.role {
+    background: var(--lavender-100);
+    color: var(--lavender-700);
+  }
+  .result-details {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 18px;
+  }
+  .result-meta {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 16px;
+  }
+
+  /* ─── Canvas area ─── */
+  .canvas-area { padding: var(--sp-4); flex-shrink: 0; }
+  .doc-card {
+    width: 232px;
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-xxs);
+  }
+  .doc-preview {
+    background: var(--neutral-100);
+    padding: var(--sp-3) var(--sp-8) 0;
+    display: flex;
+    justify-content: center;
+    height: 126px;
+    overflow: hidden;
+  }
+  .doc-preview-inner {
+    width: 184px;
+    background: white;
+    border-radius: 2px 2px 0 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    padding: 10px 10px 0;
+    gap: 5px;
+  }
+  .doc-preview-title {
+    font-size: 7px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+    letter-spacing: 0.02em;
+  }
+  .doc-preview-line {
+    height: 3px;
+    background: var(--borders-default);
+    border-radius: 1px;
+  }
+  .doc-info { padding: var(--sp-3); background: var(--surfaces-default); display: flex; flex-direction: column; gap: var(--sp-3); }
+  .doc-title { font-size: 16px; font-weight: 400; line-height: 24px; color: var(--neutral-800); }
+  .doc-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-3);
+    background: var(--lavender-700);
+    color: var(--neutral-50);
+    border: none;
+    border-radius: var(--r-lg);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow-xxs);
+    transition: background 0.12s ease;
+    align-self: flex-start;
+  }
+  .doc-action-btn:hover { background: var(--lavender-800); }
+
+  /* ─── Action chips ─── */
+  .action-suggestions {
+    display: flex;
+    gap: var(--sp-2);
+    padding: 0 var(--sp-3);
+    flex-shrink: 0;
+  }
+  .action-chip {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    transition: all 0.12s ease;
+    background: transparent;
+    font-family: var(--font);
+  }
+  .action-chip:hover { background: var(--lavender-100); border-color: var(--lavender-200); }
+  .action-chip svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-secondary); }
+  .action-chip span { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ─── Success header ─── */
+  .success-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .success-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #e8f5e9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .success-check svg { width: 12px; height: 12px; color: #388e3c; }
+
+  /* ─── Input bar ─── */
+  .input-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-3);
+    flex-shrink: 0;
+  }
+  .input-field {
+    flex: 1;
+    height: 40px;
+    border: none;
+    background: var(--surfaces-canvas);
+    border-radius: var(--r-lg);
+    padding: 0 var(--sp-4);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    outline: none;
+    line-height: 20px;
+    transition: box-shadow 0.15s ease;
+  }
+  .input-field::placeholder { color: var(--text-tertiary); font-weight: 500; }
+  .input-field:focus { box-shadow: 0 0 0 2px var(--lavender-200); }
+  .upload-btn {
+    width: 40px; height: 40px;
+    border: 1px solid var(--borders-default); border-radius: var(--r-lg);
+    background: transparent; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-secondary); flex-shrink: 0; transition: all 0.12s ease;
+  }
+  .upload-btn:hover { background: var(--neutral-100); color: var(--text-primary); }
+  .upload-btn svg { width: 20px; height: 20px; }
+  .send-btn {
+    width: 40px; height: 40px;
+    border-radius: var(--r-full); border: none;
+    background: var(--lavender-700); color: var(--neutral-50);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; box-shadow: var(--shadow-xxs);
+    transition: all 0.15s ease;
+  }
+  .send-btn:hover { background: var(--lavender-800); }
+  .send-btn:disabled { opacity: 0.5; cursor: default; }
+  .send-btn:disabled:hover { background: var(--lavender-700); }
+  .send-btn svg { width: 18px; height: 18px; }
+  .minimize-btn {
+    width: 40px; height: 40px;
+    border: 1px solid var(--borders-default); border-radius: var(--r-lg);
+    background: transparent; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-secondary); flex-shrink: 0; transition: all 0.12s ease;
+  }
+  .minimize-btn:hover { background: var(--neutral-100); color: var(--text-primary); }
+  .minimize-btn svg { width: 16px; height: 16px; }
+
+  /* ─── Animations ─── */
+  .fade-in { animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .slide-up {
+    animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  @keyframes slideUpBubble {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Section visibility ─── */
+  [data-section] { display: none; }
+  [data-section].visible { display: flex; flex-direction: column; }
+  .suggestions-row[data-section].visible,
+  .action-suggestions[data-section].visible { display: flex; flex-direction: row; }
+  .user-message[data-section].visible { display: flex; flex-direction: row; justify-content: flex-end; }
+
+  /* ─── Fullscreen extras ─── */
+  .dialog.fullscreen .canvas-area { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .dialog.fullscreen .response-area { flex: 1; justify-content: center; padding: var(--sp-6); }
+
+  /* ─── Dev toolbar ─── */
+  .dev-toggle {
+    position: fixed; top: 20px; left: 20px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    background: white; border: 1px solid var(--borders-default);
+    border-radius: var(--r-lg); box-shadow: var(--shadow-xxs);
+    font-family: var(--font); font-size: 12px; font-weight: 500;
+    color: var(--text-secondary); cursor: pointer; z-index: 300;
+    transition: all 0.12s ease; user-select: none;
+  }
+  .dev-toggle:hover { background: var(--neutral-100); color: var(--text-primary); }
+  .dev-toggle svg { width: 14px; height: 14px; opacity: 0.6; }
+
+  .dev-panel {
+    position: fixed; top: 60px; left: 20px;
+    background: white; border: 1px solid var(--borders-default);
+    border-radius: var(--r-xl); box-shadow: var(--shadow-xl);
+    z-index: 299; overflow-y: auto;
+    transform-origin: top left;
+    transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 300px;
+    max-height: calc(100vh - 80px);
+  }
+  .dev-panel.hidden { opacity: 0; transform: scale(0.95) translateY(-8px); pointer-events: none; }
+  .dev-panel-section { padding: 14px 16px; border-bottom: 1px solid var(--borders-default); }
+  .dev-panel-section:last-child { border-bottom: none; }
+  .dev-panel-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 8px;
+  }
+  .state-nav { display: flex; flex-direction: column; gap: 2px; }
+  .state-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: none; background: transparent;
+    border-radius: var(--r-lg); font-family: var(--font); font-size: 12px; font-weight: 500;
+    color: var(--text-secondary); cursor: pointer; transition: all 0.12s ease;
+    white-space: nowrap; text-align: left;
+  }
+  .state-btn:hover { background: var(--neutral-100); color: var(--text-primary); }
+  .state-btn.active { background: var(--lavender-100); color: var(--lavender-700); font-weight: 600; }
+  .state-btn-badge {
+    font-size: 10px; font-weight: 600; font-family: monospace;
+    color: var(--text-tertiary); background: var(--neutral-100);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  .state-btn.active .state-btn-badge { background: var(--lavender-200); color: var(--lavender-700); }
+  .flow-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    background: transparent; color: var(--text-secondary); border: 1px solid var(--borders-default);
+    border-radius: var(--r-lg); font-family: var(--font); font-size: 12px; font-weight: 400;
+    cursor: pointer; transition: all 0.12s ease;
+    text-align: left;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .flow-btn:hover { background: var(--lavender-100); border-color: var(--lavender-200); color: var(--text-primary); }
+  .flow-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .dialog {
+      width: calc(100vw - 32px);
+      bottom: 16px;
+      max-width: 640px;
+    }
+    .dev-panel {
+      left: 16px;
+      right: 16px;
+      min-width: auto;
+      max-width: calc(100vw - 32px);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .dialog {
+      width: calc(100vw - 16px);
+      bottom: 8px;
+      border-radius: var(--r-xl);
+    }
+    .suggestions-row {
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+    .suggestion-chip {
+      width: 100%;
+    }
+    .dev-panel {
+      left: 8px;
+      right: 8px;
+      top: 52px;
+      max-height: calc(100vh - 60px);
+    }
+    .dev-toggle {
+      left: 8px;
+      top: 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="scene-content"><p>Johnson Household — Vault</p></div>
+</div>
+
+<!-- Dev toggle -->
+<button class="dev-toggle" onclick="toggleDevPanel()">
+  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="7" cy="7" r="5.5"/><path d="M7 4.5v3l1.5 1.5"/>
+  </svg>
+  States
+</button>
+
+<!-- Dev panel -->
+<div class="dev-panel hidden" id="devPanel">
+  <div class="dev-panel-section">
+    <div class="dev-panel-label">Jump to state</div>
+    <div class="state-nav">
+      <button class="state-btn active" onclick="setState('initial')"><span class="state-btn-badge">01</span> Initial</button>
+      <button class="state-btn" onclick="setState('thinking')"><span class="state-btn-badge">02</span> Thinking</button>
+      <button class="state-btn" onclick="setState('response-actions')"><span class="state-btn-badge">02,1</span> Response + Actions</button>
+      <button class="state-btn" onclick="setState('response-input')"><span class="state-btn-badge">02,2</span> Response + Input</button>
+      <button class="state-btn" onclick="setState('canvas')"><span class="state-btn-badge">03</span> Canvas</button>
+      <button class="state-btn" onclick="setState('success')"><span class="state-btn-badge">✓</span> Success</button>
+    </div>
+  </div>
+  <div class="dev-panel-section">
+    <div class="dev-panel-label">Demo Flows</div>
+    <button class="flow-btn" onclick="startContextualSearchFlow(); toggleDevPanel()" style="margin-bottom:6px;">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="4"/><path d="M12 12l-2.5-2.5"/></svg>
+      Contextual Search (Taylor)
+    </button>
+    <button class="flow-btn" onclick="startCreateDocumentFlow(); toggleDevPanel()" style="margin-bottom:6px;">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 1H3a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V5z"/><polyline points="10,1 10,5 14,5"/></svg>
+      Create/Upload Document
+    </button>
+    <button class="flow-btn" onclick="startSecurePasswordFlow(); toggleDevPanel()" style="margin-bottom:6px;">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="10" height="7" rx="1"/><path d="M4 6V4a3 3 0 016 0v2"/></svg>
+      Secure Password/Secret
+    </button>
+    <button class="flow-btn" onclick="startInviteHouseholdFlow(); toggleDevPanel()">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12v-1a3 3 0 00-3-3H3a3 3 0 00-3 3v1"/><circle cx="5" cy="4" r="2.5"/><path d="M13 12v-1a3 3 0 00-2-2.83"/><path d="M10 2.17a3 3 0 010 5.66"/></svg>
+      Invite to Household
+    </button>
+  </div>
+</div>
+
+<!-- ═══ DIALOG ═══ -->
+<div class="dialog slide-up" id="dialog">
+
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="header-left">
+      <div class="logo">
+        <svg width="20" height="21" viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M9.72071 0.0773502C9.46927 0.115633 8.88638 0.239774 8.4254 0.353209C7.46097 0.590482 6.86913 0.840027 6.82128 1.02957C6.74483 1.3324 6.98073 1.49695 7.41012 1.44033C7.5494 1.42195 7.97772 1.31654 8.3619 1.20614C9.19304 0.967199 9.66509 0.90629 10.6905 0.905734C11.9359 0.905077 12.8574 1.07063 13.9138 1.48488C16.0716 2.33094 17.691 4.10679 18.4781 6.49003C18.8247 7.53927 18.9117 8.12917 18.9134 9.44068C18.9146 10.3289 18.8947 10.6874 18.822 11.0821C18.5006 12.8293 17.8742 14.2281 16.7706 15.6627C16.3668 16.1875 16.3142 16.3478 16.4689 16.5824C16.5864 16.7608 16.9016 16.8397 17.1252 16.7468C17.484 16.5978 18.3424 15.423 18.8654 14.3649C20.0095 12.0505 20.3058 9.2825 19.6747 6.80523C18.8903 3.72664 16.7786 1.40043 13.9246 0.470886C12.6283 0.0486634 10.944 -0.108963 9.72071 0.0773502ZM5.53368 1.49296C5.47578 1.56614 5.42838 1.66533 5.42838 1.71341C5.42838 1.76149 5.47578 1.86068 5.53368 1.93387C5.68709 2.1278 5.99131 2.12109 6.19425 1.91932C6.36122 1.75331 6.37935 1.63639 6.26363 1.47215C6.19861 1.37982 6.13608 1.35988 5.91177 1.35988C5.67754 1.35988 5.62405 1.37871 5.53368 1.49296ZM4.27037 2.01735C3.82137 2.28952 2.59331 3.38195 2.17068 3.88513C0.487934 5.88871 -0.324256 9.10922 0.120063 12.0164C0.280683 13.0675 0.693102 14.3797 1.13585 15.2484C1.80611 16.5635 2.88153 17.7984 4.04275 18.5864C5.35178 19.4748 6.67382 19.9442 8.3746 20.1245C9.18171 20.21 9.80991 20.2164 10.5995 20.1469C12.394 19.989 14.6226 19.1209 14.6226 18.5799C14.6226 18.4855 14.5762 18.4016 14.4843 18.3297C14.2979 18.1839 14.1667 18.2126 13.2003 18.6105C12.0224 19.0955 11.1878 19.2731 9.84771 19.3238C8.98106 19.3566 8.27245 19.2966 7.53645 19.1282C4.27057 18.3808 1.90374 15.7396 1.2314 12.0922C1.11426 11.4567 1.09699 9.43291 1.20361 8.83462C1.51555 7.08447 2.16575 5.58861 3.17087 4.30876C3.60031 3.762 3.97188 3.39149 4.60293 2.88089C4.88933 2.64917 5.1236 2.44932 5.1236 2.43669C5.1236 2.37791 4.99707 2.17982 4.87932 2.05432C4.72094 1.88553 4.50906 1.87265 4.27037 2.01735ZM9.38576 2.07058C8.11762 2.20437 6.54246 2.86796 5.149 3.85538C3.62423 4.93584 2.55658 6.22624 2.1273 7.5074C1.78589 8.52649 1.89689 9.12407 2.40094 8.98033C2.65244 8.90861 2.78009 8.73715 3.16706 7.95149C3.86862 6.5272 4.73846 5.39169 5.74043 4.5922C7.15796 3.46109 8.65637 2.95942 10.6351 2.95351C11.8664 2.94982 12.6212 3.11215 13.5744 3.58563C14.4585 4.02477 15.2908 4.72265 16.0756 5.68296C16.4739 6.17028 16.543 6.21846 16.8433 6.21846C17.5047 6.21846 17.1862 5.26563 16.1836 4.24462C15.2409 3.28452 14.0298 2.6221 12.5653 2.26563C11.6939 2.05351 10.3366 1.97023 9.38576 2.07058ZM9.06036 4.24033C7.52573 4.56109 6.01732 5.48775 4.80414 6.85503C3.87207 7.90548 3.33042 8.9824 3.05815 10.3263C2.92689 10.9744 2.92633 12.6714 3.05719 13.2791C3.5459 15.5485 4.99184 17.1705 7.15548 17.8766C8.02562 18.1606 8.67902 18.2536 9.79691 18.2524C11.4661 18.2506 12.739 17.9145 13.9115 17.1659C15.3834 16.226 16.4491 14.6144 16.8321 12.7488C17.1801 11.0538 16.9386 9.1473 16.186 7.64775C15.7058 6.69109 14.8609 5.69548 14.1146 5.20679C13.37 4.71922 12.4664 4.36306 11.6002 4.21573C10.9426 4.10387 9.65336 4.11639 9.06036 4.24033ZM11.3808 5.05023C13.5526 5.42811 15.323 7.41083 15.7971 9.99624C15.901 10.5628 15.8877 11.9836 15.7734 12.5215C15.104 15.6728 12.462 17.6312 9.23317 17.3695C7.71043 17.2461 6.53809 16.7202 5.52998 15.7084C4.73607 14.9115 4.29729 14.0764 4.08044 12.9496C3.98311 12.4439 3.98164 11.0908 4.07785 10.5941C4.46817 8.57922 6.15371 6.45078 8.09522 5.52129C9.18745 4.99836 10.2265 4.84937 11.3808 5.05023ZM12.0436 6.72503C11.7624 6.85977 11.853 7.10659 12.498 7.96316C13.2184 8.91967 13.423 9.31962 13.59 10.0972C13.7219 10.7121 13.7119 11.6492 13.567 12.229C13.1888 13.7433 12.1477 14.8454 10.6605 15.3061C10.1144 15.4752 9.17577 15.4754 8.62858 15.3065C7.34281 14.9095 6.58518 14.1481 6.23448 12.9003C6.07365 12.328 6.07376 11.3663 6.23473 10.7429C6.58396 9.39073 7.27856 8.49422 8.22221 8.1777C8.49692 8.08558 8.63818 8.07008 9.0633 8.08553C9.51626 8.10205 9.61226 8.12275 9.90953 8.26826C10.5567 8.58503 11.1149 9.37952 11.2945 10.2394C11.4048 10.768 11.3949 11.6066 11.2727 12.0819C11.0031 13.1297 10.4429 13.7063 9.63207 13.7703C9.16241 13.8074 8.90197 13.7197 8.61878 13.4291C8.31852 13.1209 8.21687 12.8175 8.18447 12.1326C8.12376 10.8507 8.71433 9.77467 9.15514 10.3639C9.24566 10.4848 9.26502 10.6085 9.29534 11.2584C9.34492 12.3201 9.41035 12.471 9.82129 12.471C10.2282 12.471 10.4388 11.9773 10.3915 11.1345C10.3058 9.60942 9.47288 8.86351 8.38735 9.33977C7.73908 9.62422 7.23914 10.46 7.10127 11.4899C6.93893 12.7029 7.42155 13.8573 8.27118 14.2883C8.95292 14.634 10.018 14.6115 10.7872 14.235C12.3692 13.4607 12.9951 11.1511 12.1268 9.29179C11.7376 8.45831 11.1696 7.85624 10.4319 7.49508C9.94707 7.2577 9.55608 7.16796 9.00702 7.16796C7.22969 7.16796 5.6398 8.50831 5.11304 10.4508C5.01078 10.8279 4.99691 10.9936 4.9993 11.8144C5.00184 12.6827 5.01175 12.7802 5.13945 13.1931C5.37037 13.9395 5.6526 14.425 6.15437 14.939C7.56434 16.3833 10.0165 16.7268 12.0054 15.7585C13.4274 15.0662 14.3121 13.916 14.6577 12.3105C14.7253 11.9964 14.747 11.6795 14.7435 11.0568C14.7382 10.1022 14.6676 9.78988 14.2364 8.81084C13.552 7.25715 12.6747 6.4226 12.0436 6.72503ZM16.8899 6.7676C16.7262 6.89563 16.7115 7.12361 16.8577 7.26897C17.001 7.41144 17.3212 7.40498 17.4857 7.25634C17.6798 7.08094 17.699 6.93922 17.5489 6.79003C17.385 6.62705 17.0828 6.61674 16.8899 6.7676ZM15.6567 17.0134C15.3793 17.1313 15.3015 17.494 15.5093 17.7005C15.7145 17.9046 16.1038 17.8577 16.3105 17.604C16.4305 17.4566 16.4222 17.2998 16.2861 17.1424C16.1603 16.9969 15.8467 16.9327 15.6567 17.0134Z" fill="#7E6FCA"/>
+        </svg>
+      </div>
+      <span class="header-text" id="headerText">Hey Alice, what would you like to do?</span>
+    </div>
+    <div class="header-actions" id="headerActions">
+      <button class="icon-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Open Insights" style="display:none;">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="closeBtn" onclick="handleClose()" title="Close">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M4 4l8 8M12 4l-8 8"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Suggestion chips -->
+  <div class="suggestions-row" data-section="initial">
+    <div class="suggestion-chip" onclick="startCreateDocumentFlow()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      <span>Create or upload a new document</span>
+    </div>
+    <div class="suggestion-chip" onclick="startSecurePasswordFlow()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+      </svg>
+      <span>Secure a password or secret</span>
+    </div>
+    <div class="suggestion-chip" onclick="startInviteHouseholdFlow()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+      </svg>
+      <span>Invite someone to your Household</span>
+    </div>
+  </div>
+
+  <!-- User message -->
+  <div class="user-message" data-section="user-message">
+    <div class="user-bubble" id="userBubble">
+      Is Taylor Johnson mentioned in any of the Johnson Household documents?
+    </div>
+  </div>
+
+  <!-- Response results -->
+  <div class="response-area" data-section="response">
+    <div class="result-row fade-in" style="animation-delay:0.05s">
+      <div class="result-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+        </svg>
+      </div>
+      <div class="result-content">
+        <span class="result-quote">"My brother, <strong>Taylor Johnson</strong>, will…"</span>
+        <span class="result-source">Found in <strong>Power of Attorney</strong></span>
+      </div>
+    </div>
+    <div class="result-row fade-in" style="animation-delay:0.15s">
+      <div class="result-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+        </svg>
+      </div>
+      <div class="result-content">
+        <span class="result-quote">"carried out by the Executor, <strong>Taylor Johnson</strong>, in all…"</span>
+        <span class="result-source">Found in <strong>Last Will &amp; Testament</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas-area" data-section="canvas">
+    <div class="doc-card fade-in">
+      <div class="doc-preview">
+        <div class="doc-preview-inner">
+          <div class="doc-preview-title">Texas Last Will and Testament</div>
+          <div class="doc-preview-line"></div>
+          <div class="doc-preview-line" style="width:80%"></div>
+          <div class="doc-preview-line"></div>
+          <div class="doc-preview-line" style="width:65%"></div>
+          <div class="doc-preview-line"></div>
+          <div class="doc-preview-line" style="width:90%"></div>
+          <div class="doc-preview-line" style="width:55%"></div>
+          <div class="doc-preview-line"></div>
+          <div class="doc-preview-line" style="width:75%"></div>
+        </div>
+      </div>
+      <div class="doc-info">
+        <div class="doc-title">Living Will of Damien and Abigail Strouthos</div>
+        <button class="doc-action-btn" onclick="triggerSuccess()">Invite Taylor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action chips -->
+  <div class="action-suggestions" data-section="action-chips">
+    <button class="action-chip" onclick="handleAction('share')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+      </svg>
+      <span>Share this Document with Taylor</span>
+    </button>
+    <button class="action-chip" onclick="handleAction('invite')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+      </svg>
+      <span>Invite Taylor to your Household</span>
+    </button>
+  </div>
+
+  <!-- Input bar -->
+  <div class="input-bar" id="inputBar">
+    <input class="input-field" id="inputField" type="text"
+      placeholder="Ask something else" autocomplete="off"
+      onkeydown="if(event.key==='Enter' && this.value.trim()) handleSubmit()"/>
+    <button class="upload-btn" id="uploadBtn" title="Upload document">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/>
+      </svg>
+    </button>
+    <button class="minimize-btn" id="minimizeBtn" onclick="toggleInputMode()" title="Return to suggestions" style="display:none;">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <rect x="2" y="6" width="12" height="8" rx="1.5"/><path d="M5 6V4a3 3 0 016 0v2"/>
+      </svg>
+    </button>
+    <button class="send-btn" id="sendBtn" onclick="handleSubmit()" title="Send">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 14V4"/><path d="M4 8l5-5 5 5"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const states = {
+  'initial': {
+    headerText: 'Hey Alice, what would you like to do?',
+    thinking: false,
+    sections: ['initial'],
+    placeholder: 'Is Taylor Johnson mentioned in any of the Johnson Household documents?',
+    showFullscreen: false, closeIsStop: false,
+    showUpload: true, showMinimize: false, sendDisabled: false, showInput: true,
+  },
+  'thinking': {
+    headerText: 'Flipping through contacts…',
+    thinking: true,
+    sections: ['user-message'],
+    placeholder: 'Ask something else',
+    showFullscreen: false, closeIsStop: true,
+    showUpload: true, showMinimize: false, sendDisabled: true, showInput: true,
+  },
+  'response-actions': {
+    headerText: 'I found Taylor Johnson in a few places',
+    thinking: false,
+    sections: ['response', 'action-chips'],
+    placeholder: 'Ask something else',
+    showFullscreen: true, closeIsStop: false,
+    showUpload: false, showMinimize: true, sendDisabled: false, showInput: true,
+  },
+  'response-input': {
+    headerText: 'I found Taylor Johnson in a few places',
+    thinking: false,
+    sections: ['response'],
+    placeholder: 'Ask something else',
+    showFullscreen: true, closeIsStop: false,
+    showUpload: true, showMinimize: false, sendDisabled: false, showInput: true,
+  },
+  'canvas': {
+    headerText: 'This Taylor Johnson?',
+    thinking: false,
+    sections: ['canvas'],
+    placeholder: 'Ask something else',
+    showFullscreen: true, closeIsStop: false,
+    showUpload: true, showMinimize: false, sendDisabled: true, showInput: true,
+  },
+  'success': {
+    headerText: 'Taylor Johnson has been invited',
+    thinking: false,
+    sections: [],
+    placeholder: 'Ask something else',
+    showFullscreen: false, closeIsStop: false,
+    showUpload: false, showMinimize: false, sendDisabled: false, showInput: false,
+  },
+};
+
+let currentState = 'initial';
+let isFullscreen = false;
+
+function setState(stateName, opts = {}) {
+  currentState = stateName;
+  const s = states[stateName];
+
+  // Header
+  const ht = document.getElementById('headerText');
+
+  if (stateName === 'success') {
+    // Swap to success indicator
+    ht.style.display = 'none';
+    let si = document.getElementById('successIndicator');
+    if (!si) {
+      si = document.createElement('div');
+      si.id = 'successIndicator';
+      si.className = 'success-indicator';
+      si.innerHTML = `
+        <div class="success-check">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2,6 5,9 10,3"/>
+          </svg>
+        </div>
+        <span style="font-size:18px;font-weight:500;letter-spacing:-0.4px;color:var(--text-primary);">Taylor Johnson has been invited</span>
+      `;
+      ht.parentNode.insertBefore(si, ht.nextSibling);
+    }
+    si.style.display = 'flex';
+  } else {
+    // Normal header
+    ht.style.display = '';
+    ht.textContent = s.headerText;
+    ht.className = 'header-text' + (s.thinking ? ' thinking' : '');
+    const si = document.getElementById('successIndicator');
+    if (si) si.style.display = 'none';
+  }
+
+  // Sections
+  document.querySelectorAll('[data-section]').forEach(el => el.classList.remove('visible'));
+  s.sections.forEach(name => {
+    const el = document.querySelector(`[data-section="${name}"]`);
+    if (el) el.classList.add('visible');
+  });
+
+  // Input bar
+  document.getElementById('inputBar').style.display = s.showInput ? 'flex' : 'none';
+  document.getElementById('inputField').placeholder = s.placeholder;
+  document.getElementById('uploadBtn').style.display = s.showUpload ? 'flex' : 'none';
+  document.getElementById('minimizeBtn').style.display = s.showMinimize ? 'flex' : 'none';
+  document.getElementById('sendBtn').disabled = s.sendDisabled;
+
+  // Fullscreen btn
+  document.getElementById('fullscreenBtn').style.display = s.showFullscreen ? 'flex' : 'none';
+
+  // Close / Stop
+  const closeBtn = document.getElementById('closeBtn');
+  if (s.closeIsStop) {
+    closeBtn.className = 'icon-btn stop';
+    closeBtn.title = 'Stop';
+    closeBtn.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor"><rect x="4" y="4" width="8" height="8" rx="1.5"/></svg>`;
+  } else {
+    closeBtn.className = 'icon-btn';
+    closeBtn.title = 'Close';
+    closeBtn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>`;
+  }
+
+  // Sync dev panel active state
+  const stateMap = { initial:0, thinking:1, 'response-actions':2, 'response-input':3, canvas:4, success:5 };
+  document.querySelectorAll('.state-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.state-btn')[stateMap[stateName]]?.classList.add('active');
+}
+
+function handleSubmit() {
+  const input = document.getElementById('inputField');
+  const text = input.value.trim() || input.placeholder;
+  document.getElementById('userBubble').textContent = text;
+  input.value = '';
+  setState('thinking');
+  setTimeout(() => setState('response-actions'), 3000);
+}
+
+function handleSuggestion(text) {
+  document.getElementById('userBubble').textContent = text;
+  setState('thinking');
+  setTimeout(() => setState('canvas'), 2800);
+}
+
+function handleAction(type) {
+  setState('canvas');
+}
+
+function triggerSuccess() {
+  setState('success');
+}
+
+function handleClose() {
+  if (states[currentState]?.closeIsStop) {
+    setState('response-input');
+    return;
+  }
+  const dialog = document.getElementById('dialog');
+  dialog.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+  dialog.style.opacity = '0';
+  dialog.style.transform = 'translateX(-50%) translateY(16px)';
+  setTimeout(() => {
+    dialog.style.transition = '';
+    dialog.style.opacity = '';
+    dialog.style.transform = '';
+    setState('initial');
+  }, 320);
+}
+
+function toggleInputMode() {
+  setState(currentState === 'response-actions' ? 'response-input' : 'response-actions');
+}
+
+function toggleFullscreen() {
+  const dialog = document.getElementById('dialog');
+  isFullscreen = !isFullscreen;
+
+  // Snap without transition to avoid transform conflict
+  dialog.style.transition = 'none';
+  dialog.classList.toggle('fullscreen', isFullscreen);
+  // Force reflow then re-enable transition
+  void dialog.offsetWidth;
+  dialog.style.transition = '';
+
+  const btn = document.getElementById('fullscreenBtn');
+  if (isFullscreen) {
+    btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v4M14 2l-5 5M6 14H2v-4M2 14l5-5"/></svg>`;
+    btn.title = 'Exit Insights';
+  } else {
+    btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg>`;
+    btn.title = 'Open Insights';
+  }
+}
+
+// ═══ DialogFlow engine ═══
+class DialogFlow {
+  constructor(config) {
+    this.steps = config.steps || [];
+    this.currentStep = 0;
+    this.answers = {};
+    this.onComplete = config.onComplete || (() => {});
+  }
+  start() {
+    console.log('DialogFlow.start() called');
+    this.currentStep = 0;
+    this.answers = {};
+    this.renderStep();
+  }
+  advance(answer) {
+    console.log('DialogFlow.advance() called with:', answer);
+    const step = this.steps[this.currentStep];
+    this.answers[step.id || `step-${this.currentStep}`] = answer;
+    this.currentStep++;
+    // Brief thinking interstitial between steps
+    setState('thinking');
+    setTimeout(() => this.renderStep(), 2400);
+  }
+  renderStep() {
+    if (this.currentStep >= this.steps.length) { this.onComplete(this.answers); return; }
+    const step = this.steps[this.currentStep];
+    document.querySelectorAll('[data-section]').forEach(el => el.classList.remove('visible'));
+    document.getElementById('headerText').textContent = step.question;
+    document.getElementById('headerText').className = 'header-text';
+    document.getElementById('fullscreenBtn').style.display = step.showInsights ? 'flex' : 'none';
+    document.getElementById('inputBar').style.display = 'flex';
+    document.getElementById('uploadBtn').style.display = 'flex';
+    document.getElementById('minimizeBtn').style.display = 'none';
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('closeBtn').className = 'icon-btn';
+    document.getElementById('closeBtn').innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>`;
+    const si = document.getElementById('successIndicator');
+    if (si) si.style.display = 'none';
+    document.getElementById('headerText').style.display = '';
+    if (step.type === 'suggestions') this._renderSuggestions(step);
+    else if (step.type === 'results') this._renderResults(step);
+    else if (step.type === 'canvas') this._renderCanvas(step);
+  }
+  _renderSuggestions(step) {
+    const c = document.querySelector('[data-section="initial"]');
+    c.innerHTML = step.options.map(o => `
+      <div class="suggestion-chip" onclick="window.activeFlow && window.activeFlow.advance('${o.value}')">
+        ${o.icon ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${o.icon}</svg>` : ''}
+        <span>${o.label}</span>
+      </div>`).join('');
+    c.classList.add('visible');
+  }
+  _renderResults(step) {
+    const c = document.querySelector('[data-section="response"]');
+    c.innerHTML = step.results.map((r, i) => {
+      // Detailed result row (multi-line with badges)
+      if (r.detailed) {
+        return `
+          <div class="result-row detailed fade-in" style="animation-delay:${i*0.1}s" onclick="window.activeFlow && window.activeFlow.advance('${r.id}')">
+            <div class="result-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+              </svg>
+            </div>
+            <div class="result-content">
+              <div class="result-header">
+                <span class="result-title">${r.title}</span>
+                ${r.status ? `<span class="result-badge ${r.status}">${r.status}</span>` : ''}
+                ${r.role ? `<span class="result-badge role">${r.role}</span>` : ''}
+              </div>
+              ${r.details ? `<div class="result-details">${r.details}</div>` : ''}
+              ${r.meta ? `<div class="result-meta">${r.meta}</div>` : ''}
+            </div>
+          </div>`;
+      }
+      // Simple result row (original format)
+      return `
+        <div class="result-row fade-in" style="animation-delay:${i*0.1}s" onclick="window.activeFlow && window.activeFlow.advance('${r.id}')">
+          <div class="result-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+            </svg>
+          </div>
+          <div class="result-content">
+            <span class="result-quote">${r.quote}</span>
+            <span class="result-source">Found in <strong>${r.source}</strong></span>
+          </div>
+        </div>`;
+    }).join('');
+    c.classList.add('visible');
+  }
+  _renderCanvas(step) {
+    const c = document.querySelector('[data-section="canvas"]');
+    c.innerHTML = `
+      <div class="doc-card fade-in">
+        <div class="doc-preview">
+          <div class="doc-preview-inner">
+            <div class="doc-preview-title">${step.docTitle || ''}</div>
+            <div class="doc-preview-line"></div>
+            <div class="doc-preview-line" style="width:80%"></div>
+            <div class="doc-preview-line"></div>
+            <div class="doc-preview-line" style="width:65%"></div>
+            <div class="doc-preview-line"></div>
+            <div class="doc-preview-line" style="width:90%"></div>
+          </div>
+        </div>
+        <div class="doc-info">
+          <div class="doc-title">${step.docName || ''}</div>
+          <button class="doc-action-btn" onclick="window.activeFlow ? (window.activeFlow.advance('${step.actionValue||'confirm'}'), window.triggerSuccess()) : window.triggerSuccess()">${step.actionLabel || 'Confirm'}</button>
+        </div>
+      </div>`;
+    c.classList.add('visible');
+  }
+}
+
+let activeFlow = null;
+window.activeFlow = activeFlow;  // Make globally accessible
+
+// ═══ Helper: Show user message before flow ═══
+function showUserMessage(text, callback) {
+  console.log('showUserMessage called with:', text);
+  document.getElementById('userBubble').textContent = text;
+  document.querySelectorAll('[data-section]').forEach(el => el.classList.remove('visible'));
+  document.querySelector('[data-section="user-message"]').classList.add('visible');
+  document.getElementById('headerText').textContent = 'Thinking...';
+  document.getElementById('headerText').className = 'header-text thinking';
+  document.getElementById('inputBar').style.display = 'flex';
+  document.getElementById('uploadBtn').style.display = 'flex';
+  document.getElementById('sendBtn').disabled = true;
+  setTimeout(callback, 2400);
+}
+
+// ═══ CONTEXTUAL SEARCH FLOW: Finding Taylor Johnson ═══
+function startContextualSearchFlow() {
+  console.log('startContextualSearchFlow called');
+  showUserMessage('Find Taylor Johnson in my documents', () => {
+    activeFlow = window.activeFlow = new DialogFlow({
+    steps: [
+      {
+        id: 'search-results',
+        type: 'results',
+        question: 'We found Taylor Johnson in these documents',
+        showInsights: true,
+        results: [
+          {
+            id: 'will-2024',
+            detailed: true,
+            title: 'Living Will of Damien and Abigail, 2024',
+            status: 'archived',
+            role: 'Witness',
+            details: 'Taylor Johnson was listed as a witness to this will.',
+            meta: 'This will is no longer current'
+          },
+          {
+            id: 'will-2025',
+            detailed: true,
+            title: 'Living Will of Damien and Abigail, 2025',
+            status: 'current',
+            details: 'Taylor Johnson is NOT listed in this will. Current witnesses are James Rollen and Jessica Myers.',
+            meta: 'Last updated 3 months ago'
+          },
+          {
+            id: 'email-found',
+            detailed: true,
+            title: 'Contact Information Found',
+            details: 'Located email address: taylor.johnson@email.com',
+            meta: 'From 2024 correspondence'
+          }
+        ]
+      },
+      {
+        id: 'intent',
+        type: 'suggestions',
+        question: 'What would you like to do?',
+        options: [
+          {
+            label: 'Draft email for 2026 Will witness',
+            value: 'draft-email',
+            icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>'
+          },
+          {
+            label: 'Add Taylor to Contacts only',
+            value: 'add-contact',
+            icon: '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>'
+          },
+          {
+            label: 'Compare will versions',
+            value: 'compare',
+            icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>'
+          }
+        ]
+      }
+    ],
+    onComplete: (answers) => {
+      if (answers.intent === 'draft-email') {
+        // Show draft email canvas
+        const c = document.querySelector('[data-section="canvas"]');
+        c.innerHTML = `
+          <div style="max-width: 520px; padding: var(--sp-4); background: white; border-radius: var(--r-xl); border: 1px solid var(--borders-default);">
+            <div style="margin-bottom: var(--sp-4);">
+              <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: var(--sp-2);">To: taylor.johnson@email.com</div>
+              <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: var(--sp-3);">Subject: Witness Request for 2026 Living Will</div>
+              <div style="padding: var(--sp-4); background: var(--neutral-100); border-radius: var(--r-lg); font-size: 13px; line-height: 20px; color: var(--text-primary);">
+                <p style="margin: 0 0 12px 0;">Hi Taylor,</p>
+                <p style="margin: 0 0 12px 0;">I hope this email finds you well. I'm updating my Living Will for 2026 and would like to ask if you'd be willing to serve as a witness, as you did for our 2024 will.</p>
+                <p style="margin: 0 0 12px 0;">The witnessing process is straightforward and can be done at your convenience. Please let me know if you're available.</p>
+                <p style="margin: 0;">Best regards,<br>Damien & Abigail</p>
+              </div>
+            </div>
+            <div style="display: flex; gap: var(--sp-2);">
+              <button class="doc-action-btn" onclick="triggerSuccess()">Send Email</button>
+              <button style="padding: var(--sp-3); background: transparent; color: var(--text-secondary); border: 1px solid var(--borders-default); border-radius: var(--r-lg); font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer;" onclick="triggerSuccess()">Edit Draft</button>
+            </div>
+          </div>
+        `;
+        c.classList.add('visible');
+        document.getElementById('headerText').textContent = 'Draft email ready to send';
+        setTimeout(() => {
+          triggerSuccess();
+          setTimeout(() => {
+            const si = document.querySelector('.success-indicator span');
+            if (si) si.textContent = 'Email sent to Taylor Johnson';
+          }, 50);
+        }, 5000);
+      } else if (answers.intent === 'add-contact') {
+        triggerSuccess();
+        setTimeout(() => {
+          const si = document.querySelector('.success-indicator span');
+          if (si) si.textContent = 'Taylor Johnson added to contacts';
+        }, 50);
+      } else {
+        triggerSuccess();
+        setTimeout(() => {
+          const si = document.querySelector('.success-indicator span');
+          if (si) si.textContent = 'Comparison view ready';
+        }, 50);
+      }
+    }
+    });
+    activeFlow.start();
+  });
+}
+
+function startSharingFlow() {
+  activeFlow = new DialogFlow({
+    steps: [
+      {
+        id: 'intent', type: 'suggestions',
+        question: 'Hey Alice, what would you like to do?',
+        options: [
+          { label: 'Share a document', value: 'share-doc', icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>' },
+          { label: 'Invite to Household', value: 'invite', icon: '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>' },
+          { label: 'Manage access', value: 'manage', icon: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>' },
+        ],
+      },
+      {
+        id: 'confirm', type: 'results',
+        question: 'I found Taylor Johnson in a few places',
+        showInsights: true,
+        results: [
+          { id: 'poa', quote: '"My brother, <strong>Taylor Johnson</strong>, will…"', source: 'Power of Attorney' },
+          { id: 'will', quote: '"carried out by the Executor, <strong>Taylor Johnson</strong>…"', source: 'Last Will & Testament' },
+        ],
+      },
+      {
+        id: 'document', type: 'canvas',
+        question: 'This Taylor Johnson?',
+        showInsights: true,
+        docTitle: 'Texas Last Will and Testament',
+        docName: 'Living Will of Damien and Abigail Strouthos',
+        actionLabel: 'Invite Taylor',
+        actionValue: 'invite-taylor',
+      },
+    ],
+    onComplete: () => triggerSuccess(),
+  });
+  activeFlow.start();
+}
+
+// ═══ DEMO FLOW 1: Create/Upload Document ═══
+function startCreateDocumentFlow() {
+  console.log('startCreateDocumentFlow called');
+  showUserMessage('Create or upload a new document', () => {
+    activeFlow = window.activeFlow = new DialogFlow({
+      steps: [
+        {
+          id: 'method',
+          type: 'suggestions',
+          question: 'How would you like to add this document?',
+          options: [
+            { label: 'Upload from device', value: 'upload', icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="11" x2="12" y2="17"/><polyline points="9,14 12,11 15,14"/>' },
+            { label: 'Create new document', value: 'create', icon: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>' },
+            { label: 'Scan with camera', value: 'scan', icon: '<path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>' }
+          ]
+        },
+        {
+          id: 'detect',
+          type: 'results',
+          question: 'I detected this document type',
+          showInsights: true,
+          results: [
+            {
+              id: 'detected-id',
+              detailed: true,
+              title: 'Texas Driver License',
+              status: 'current',
+              details: 'I found a Texas DL for Alice Marie Johnson. Expires December 2028.',
+              meta: 'Detected via OCR scan'
+            },
+            {
+              id: 'similar-docs',
+              detailed: true,
+              title: 'Similar Documents in Vault',
+              details: 'You have 2 other ID documents: Passport (2023) and Social Security Card.',
+              meta: 'All stored in Personal Vault'
+            }
+          ]
+        },
+        {
+          id: 'vault-options',
+          type: 'suggestions',
+          question: 'Where should I save this?',
+          options: [
+            { label: 'Personal Vault (recommended)', value: 'personal', icon: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>' },
+            { label: 'Household Vault (shared)', value: 'household', icon: '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>' },
+            { label: 'Replace old DL scan', value: 'replace', icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>' }
+          ]
+        }
+      ],
+      onComplete: () => {
+        triggerSuccess();
+        setTimeout(() => {
+          const si = document.querySelector('.success-indicator span');
+          if (si) si.textContent = 'Driver License saved to Personal Vault';
+        }, 50);
+      }
+    });
+    activeFlow.start();
+  });
+}
+
+// ═══ DEMO FLOW 2: Secure Password/Secret ═══
+function startSecurePasswordFlow() {
+  console.log('startSecurePasswordFlow called');
+  showUserMessage('Secure a password or secret', () => {
+    activeFlow = window.activeFlow = new DialogFlow({
+      steps: [
+        {
+          id: 'detect-context',
+          type: 'results',
+          question: 'I noticed you have this website open',
+          showInsights: true,
+          results: [
+            {
+              id: 'detected-site',
+              detailed: true,
+              title: 'amazon.com Login Detected',
+              details: 'Would you like to save your Amazon account credentials?',
+              meta: 'Auto-detected from active browser tab'
+            },
+            {
+              id: 'existing-passwords',
+              detailed: true,
+              title: 'Related Credentials in Vault',
+              details: 'You have 3 other shopping site passwords: Walmart, Target, Etsy',
+              meta: 'All stored in Personal Vault'
+            }
+          ]
+        },
+        {
+          id: 'input-method',
+          type: 'suggestions',
+          question: 'How would you like to save this?',
+          options: [
+            { label: 'Auto-fill from browser', value: 'autofill', icon: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>' },
+            { label: 'Generate new password', value: 'generate', icon: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>' },
+            { label: 'Type it manually', value: 'manual', icon: '<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>' }
+          ]
+        },
+        {
+          id: 'vault-selection',
+          type: 'suggestions',
+          question: 'Where should I store this?',
+          options: [
+            { label: 'Personal Vault (recommended)', value: 'personal', icon: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>' },
+            { label: 'Household Vault (shared)', value: 'household', icon: '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>' },
+            { label: 'Work Vault', value: 'work', icon: '<path d="M20 7h-3V4a2 2 0 00-2-2H9a2 2 0 00-2 2v3H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/>' }
+          ]
+        }
+      ],
+      onComplete: () => {
+        triggerSuccess();
+        setTimeout(() => {
+          const si = document.querySelector('.success-indicator span');
+          if (si) si.textContent = 'Amazon credentials saved securely';
+        }, 50);
+      }
+    });
+    activeFlow.start();
+  });
+}
+
+// ═══ DEMO FLOW 3: Invite to Household ═══
+function startInviteHouseholdFlow() {
+  console.log('startInviteHouseholdFlow called');
+  showUserMessage('Invite someone to your Household', () => {
+    activeFlow = window.activeFlow = new DialogFlow({
+      steps: [
+        {
+          id: 'search-contacts',
+          type: 'results',
+          question: 'I found these contacts',
+          showInsights: true,
+          results: [
+            {
+              id: 'contact-1',
+              detailed: true,
+              title: 'Sarah Johnson (Sister)',
+              details: 'sarah.m.johnson@email.com • Lives in Austin, TX',
+              meta: 'Not yet in household • Added to contacts 2 years ago'
+            },
+            {
+              id: 'contact-2',
+              detailed: true,
+              title: 'Michael Johnson (Brother)',
+              role: 'Member',
+              status: 'current',
+              details: 'michael.johnson@email.com • Already has full access',
+              meta: 'Member since March 2024'
+            },
+            {
+              id: 'contact-3',
+              detailed: true,
+              title: 'David Chen (Financial Advisor)',
+              details: 'd.chen@advisors.com • Professional contact',
+              meta: 'Not in household • Last contacted 6 months ago'
+            }
+          ]
+        },
+        {
+          id: 'access-level',
+          type: 'suggestions',
+          question: 'What level of access for Sarah Johnson?',
+          options: [
+            { label: 'Full Access (recommended for family)', value: 'full', icon: '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>' },
+            { label: 'View Only (can see but not edit)', value: 'view', icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>' },
+            { label: 'Custom Permissions', value: 'custom', icon: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>' }
+          ]
+        },
+        {
+          id: 'document-access',
+          type: 'results',
+          question: 'She\'ll have access to these documents',
+          showInsights: true,
+          results: [
+            {
+              id: 'doc-group-1',
+              detailed: true,
+              title: 'Legal Documents (8 files)',
+              details: 'Living Will, Power of Attorney, Estate Plan, Property Deeds',
+              meta: 'Full edit access'
+            },
+            {
+              id: 'doc-group-2',
+              detailed: true,
+              title: 'Financial Records (12 files)',
+              details: 'Tax returns, Bank statements, Investment accounts',
+              meta: 'Full edit access'
+            },
+            {
+              id: 'doc-group-3',
+              detailed: true,
+              title: 'Personal Documents (5 files)',
+              details: 'IDs, Passports, Birth certificates',
+              meta: 'View only'
+            }
+          ]
+        }
+      ],
+      onComplete: () => {
+        triggerSuccess();
+        setTimeout(() => {
+          const si = document.querySelector('.success-indicator span');
+          if (si) si.textContent = 'Invitation sent to Sarah Johnson';
+        }, 50);
+      }
+    });
+    activeFlow.start();
+  });
+}
+
+// Dev panel
+function toggleDevPanel() {
+  console.log('Toggle dev panel clicked');
+  const panel = document.getElementById('devPanel');
+  if (panel) {
+    panel.classList.toggle('hidden');
+    console.log('Dev panel is now:', panel.classList.contains('hidden') ? 'hidden' : 'visible');
+  } else {
+    console.error('Dev panel element not found!');
+  }
+}
+
+document.addEventListener('click', e => {
+  const panel = document.getElementById('devPanel');
+  if (panel && !panel.classList.contains('hidden') &&
+      !panel.contains(e.target) && !e.target.closest('.dev-toggle')) {
+    panel.classList.add('hidden');
+  }
+});
+
+// Make functions globally accessible
+window.toggleDevPanel = toggleDevPanel;
+window.setState = setState;
+window.startContextualSearchFlow = startContextualSearchFlow;
+window.startCreateDocumentFlow = startCreateDocumentFlow;
+window.startSecurePasswordFlow = startSecurePasswordFlow;
+window.startInviteHouseholdFlow = startInviteHouseholdFlow;
+window.triggerSuccess = triggerSuccess;
+
+// Init
+setState('initial');
+document.getElementById('inputField').focus();
+console.log('Dialog initialized');
+</script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+{
+  "version": "1.3.0",
+  "components": {
+    "suggestion-chip": {
+      "name": "Suggestion Chip",
+      "category": "buttons",
+      "description": "Interactive suggestion button with icon and label",
+      "props": {
+        "label": {
+          "type": "string",
+          "required": true,
+          "description": "Button text"
+        },
+        "icon": {
+          "type": "svg",
+          "required": false,
+          "description": "20x20 SVG icon (path only)"
+        },
+        "value": {
+          "type": "string",
+          "required": true,
+          "description": "Value passed to onClick handler"
+        }
+      },
+      "states": ["default", "hover"],
+      "example": {
+        "label": "Create or upload a new document",
+        "icon": "<path d=\"M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z\"/><polyline points=\"14,2 14,8 20,8\"/><line x1=\"12\" y1=\"18\" x2=\"12\" y2=\"12\"/><line x1=\"9\" y1=\"15\" x2=\"15\" y2=\"15\"/>",
+        "value": "create-document"
+      }
+    },
+    "action-chip": {
+      "name": "Action Chip",
+      "category": "buttons",
+      "description": "Secondary action button with icon and label",
+      "props": {
+        "label": {
+          "type": "string",
+          "required": true,
+          "description": "Button text"
+        },
+        "icon": {
+          "type": "svg",
+          "required": false,
+          "description": "20x20 SVG icon (path only)"
+        },
+        "onClick": {
+          "type": "function",
+          "required": true,
+          "description": "Click handler"
+        }
+      },
+      "states": ["default", "hover"],
+      "example": {
+        "label": "Share this Document",
+        "icon": "<path d=\"M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z\"/><polyline points=\"14,2 14,8 20,8\"/>"
+      }
+    },
+    "user-bubble": {
+      "name": "User Message Bubble",
+      "category": "messages",
+      "description": "Right-aligned user message bubble that hugs content",
+      "props": {
+        "text": {
+          "type": "string",
+          "required": true,
+          "description": "Message text"
+        }
+      },
+      "states": ["default"],
+      "behavior": {
+        "alignment": "right (flex-end)",
+        "width": "content-hugging (max 85%)",
+        "animation": "slide-up from bottom (12px, 300ms)"
+      },
+      "example": {
+        "text": "Find Taylor Johnson in my documents"
+      }
+    },
+    "result-row": {
+      "name": "Result Row",
+      "category": "results",
+      "description": "Clickable result item with icon and content",
+      "variants": ["simple", "detailed"],
+      "props": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "description": "Unique identifier"
+        },
+        "detailed": {
+          "type": "boolean",
+          "required": false,
+          "description": "Use detailed variant with badges"
+        },
+        "quote": {
+          "type": "string",
+          "required": "if simple variant",
+          "description": "Main text (simple variant)"
+        },
+        "source": {
+          "type": "string",
+          "required": "if simple variant",
+          "description": "Source text (simple variant)"
+        },
+        "title": {
+          "type": "string",
+          "required": "if detailed variant",
+          "description": "Title text (detailed variant)"
+        },
+        "details": {
+          "type": "string",
+          "required": false,
+          "description": "Details text (detailed variant)"
+        },
+        "meta": {
+          "type": "string",
+          "required": false,
+          "description": "Meta text (detailed variant)"
+        },
+        "status": {
+          "type": "enum",
+          "values": ["current", "archived"],
+          "required": false,
+          "description": "Status badge (detailed variant)"
+        },
+        "role": {
+          "type": "string",
+          "required": false,
+          "description": "Role badge text (detailed variant)"
+        }
+      },
+      "states": ["default", "hover"],
+      "example-simple": {
+        "id": "doc-1",
+        "quote": "My brother, <strong>Taylor Johnson</strong>, will…",
+        "source": "Found in <strong>Power of Attorney</strong>"
+      },
+      "example-detailed": {
+        "id": "will-2024",
+        "detailed": true,
+        "title": "Living Will, 2024",
+        "status": "archived",
+        "role": "Witness",
+        "details": "Taylor was listed as a witness to this will",
+        "meta": "This will is no longer current"
+      }
+    },
+    "doc-card": {
+      "name": "Document Card",
+      "category": "canvas",
+      "description": "Document preview card with action button",
+      "props": {
+        "docTitle": {
+          "type": "string",
+          "required": true,
+          "description": "Document type/title shown in preview"
+        },
+        "docName": {
+          "type": "string",
+          "required": true,
+          "description": "Document name shown below preview"
+        },
+        "actionLabel": {
+          "type": "string",
+          "required": true,
+          "description": "Action button text"
+        },
+        "actionValue": {
+          "type": "string",
+          "required": false,
+          "description": "Value passed to handler"
+        }
+      },
+      "states": ["default"],
+      "example": {
+        "docTitle": "Texas Last Will and Testament",
+        "docName": "Living Will of Damien and Abigail Strouthos",
+        "actionLabel": "Confirm",
+        "actionValue": "confirm"
+      }
+    },
+    "header": {
+      "name": "Dialog Header",
+      "category": "layout",
+      "description": "Top header with logo, text, and action buttons",
+      "props": {
+        "text": {
+          "type": "string",
+          "required": true,
+          "description": "Header text"
+        },
+        "thinking": {
+          "type": "boolean",
+          "required": false,
+          "description": "Show thinking animation"
+        },
+        "showFullscreen": {
+          "type": "boolean",
+          "required": false,
+          "description": "Show fullscreen/insights button"
+        }
+      },
+      "states": ["default", "thinking", "success"],
+      "example": {
+        "text": "Hey Alice, what would you like to do?",
+        "thinking": false,
+        "showFullscreen": false
+      }
+    },
+    "input-bar": {
+      "name": "Input Bar",
+      "category": "inputs",
+      "description": "Bottom input bar with field and action buttons",
+      "props": {
+        "placeholder": {
+          "type": "string",
+          "required": false,
+          "description": "Input placeholder text"
+        },
+        "showUpload": {
+          "type": "boolean",
+          "required": false,
+          "description": "Show upload button"
+        },
+        "showMinimize": {
+          "type": "boolean",
+          "required": false,
+          "description": "Show minimize button"
+        },
+        "sendDisabled": {
+          "type": "boolean",
+          "required": false,
+          "description": "Disable send button"
+        }
+      },
+      "states": ["default", "disabled", "with-upload", "with-minimize"],
+      "example": {
+        "placeholder": "Ask something...",
+        "showUpload": true,
+        "showMinimize": false,
+        "sendDisabled": false
+      }
+    },
+    "success-indicator": {
+      "name": "Success Indicator",
+      "category": "feedback",
+      "description": "Success state with checkmark and message",
+      "props": {
+        "message": {
+          "type": "string",
+          "required": true,
+          "description": "Success message"
+        }
+      },
+      "states": ["visible", "hidden"],
+      "example": {
+        "message": "Invitation sent successfully"
+      }
+    }
+  },
+  "step-types": {
+    "suggestions": {
+      "name": "Suggestion Step",
+      "description": "Display suggestion chips for user to select",
+      "props": {
+        "id": {
+          "type": "string",
+          "required": true
+        },
+        "type": {
+          "type": "literal",
+          "value": "suggestions"
+        },
+        "question": {
+          "type": "string",
+          "required": true,
+          "description": "Header text"
+        },
+        "options": {
+          "type": "array",
+          "items": "suggestion-chip",
+          "required": true
+        }
+      },
+      "example": {
+        "id": "upload-method",
+        "type": "suggestions",
+        "question": "How would you like to add this document?",
+        "options": [
+          {
+            "label": "Upload from device",
+            "value": "upload",
+            "icon": "<path d=\"M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4\"/><polyline points=\"17,8 12,3 7,8\"/><line x1=\"12\" y1=\"3\" x2=\"12\" y2=\"15\"/>"
+          },
+          {
+            "label": "Create new",
+            "value": "create",
+            "icon": "<line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/>"
+          }
+        ]
+      }
+    },
+    "results": {
+      "name": "Results Step",
+      "description": "Display clickable result rows",
+      "props": {
+        "id": {
+          "type": "string",
+          "required": true
+        },
+        "type": {
+          "type": "literal",
+          "value": "results"
+        },
+        "question": {
+          "type": "string",
+          "required": true,
+          "description": "Header text"
+        },
+        "showInsights": {
+          "type": "boolean",
+          "required": false,
+          "description": "Show fullscreen/insights button"
+        },
+        "results": {
+          "type": "array",
+          "items": "result-row",
+          "required": true
+        }
+      },
+      "example": {
+        "id": "document-list",
+        "type": "results",
+        "question": "I found these documents",
+        "showInsights": true,
+        "results": [
+          {
+            "id": "doc-1",
+            "detailed": true,
+            "title": "Driver License, 2024",
+            "status": "current",
+            "details": "Expires December 2028",
+            "meta": "Stored in Personal Vault"
+          }
+        ]
+      }
+    },
+    "canvas": {
+      "name": "Canvas Step",
+      "description": "Display document preview card",
+      "props": {
+        "id": {
+          "type": "string",
+          "required": true
+        },
+        "type": {
+          "type": "literal",
+          "value": "canvas"
+        },
+        "question": {
+          "type": "string",
+          "required": true,
+          "description": "Header text"
+        },
+        "docTitle": {
+          "type": "string",
+          "required": true
+        },
+        "docName": {
+          "type": "string",
+          "required": true
+        },
+        "actionLabel": {
+          "type": "string",
+          "required": true
+        },
+        "actionValue": {
+          "type": "string",
+          "required": false
+        },
+        "showInsights": {
+          "type": "boolean",
+          "required": false
+        }
+      },
+      "example": {
+        "id": "confirm-save",
+        "type": "canvas",
+        "question": "Save to your vault?",
+        "docTitle": "Texas Driver License",
+        "docName": "Alice Marie Johnson",
+        "actionLabel": "Save to Personal Vault",
+        "actionValue": "save",
+        "showInsights": false
+      }
+    }
+  },
+  "design-tokens": {
+    "colors": {
+      "--lavender-700": "#7e6fca",
+      "--user-bubble": "#4E7195",
+      "--text-primary": "#3d3935",
+      "--text-secondary": "#6b665f",
+      "--borders-default": "#f0eee6",
+      "--lavender-100": "#f0ecfa",
+      "--lavender-200": "#e0d9f4"
+    },
+    "spacing": {
+      "--sp-1": "4px",
+      "--sp-2": "8px",
+      "--sp-3": "12px",
+      "--sp-4": "16px",
+      "--sp-6": "24px",
+      "--sp-8": "32px"
+    },
+    "radius": {
+      "--r-sm": "4px",
+      "--r-md": "6px",
+      "--r-lg": "8px",
+      "--r-xl": "12px",
+      "--r-2xl": "16px",
+      "--r-full": "9999px"
+    }
+  }
+}
