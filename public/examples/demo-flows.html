@@ -437,13 +437,24 @@ class DialogFlow {
     else if (step.type === 'canvas') this._renderCanvas(step);
   }
   _renderSuggestions(step) {
-    const c = document.querySelector('[data-section="initial"]');
-    c.innerHTML = step.options.map(o => `
-      <div class="suggestion-chip" onclick="window.activeFlow && window.activeFlow.advance('${o.value}')">
-        ${o.icon ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${o.icon}</svg>` : ''}
-        <span>${o.label}</span>
-      </div>`).join('');
-    c.classList.add('visible');
+    const isFirstStep = this.currentStep === 0;
+    if (isFirstStep) {
+      const c = document.querySelector('[data-section="initial"]');
+      c.innerHTML = step.options.map(o => `
+        <div class="suggestion-chip" onclick="window.activeFlow && window.activeFlow.advance('${o.value}')">
+          ${o.icon ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${o.icon}</svg>` : ''}
+          <span>${o.label}</span>
+        </div>`).join('');
+      c.classList.add('visible');
+    } else {
+      const c = document.querySelector('[data-section="response"]');
+      c.innerHTML = step.options.map((o, i) => `
+        <div class="suggestion-option fade-in" style="animation-delay:${i*0.1}s" onclick="window.activeFlow && window.activeFlow.advance('${o.value}')">
+          ${o.icon ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${o.icon}</svg>` : ''}
+          <span>${o.label}</span>
+        </div>`).join('');
+      c.classList.add('visible');
+    }
   }
   _renderResults(step) {
     const c = document.querySelector('[data-section="response"]');

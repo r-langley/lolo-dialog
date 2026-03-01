@@ -159,28 +159,58 @@ export class DialogFlow {
   }
 
   _renderSuggestions(step) {
-    const container = document.querySelector('[data-section="initial"]');
-    if (!container) {
-      console.error('Container [data-section="initial"] not found');
-      return;
-    }
+    // First step: horizontal layout in initial section
+    // Subsequent steps: vertical layout in response section
+    const isFirstStep = this.currentStep === 0;
 
-    container.innerHTML = step.options.map((o, i) => `
-      <div class="suggestion-chip" data-option-index="${i}">
-        ${o.icon ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${o.icon}</svg>` : ''}
-        <span>${o.label}</span>
-      </div>`).join('');
+    if (isFirstStep) {
+      const container = document.querySelector('[data-section="initial"]');
+      if (!container) {
+        console.error('Container [data-section="initial"] not found');
+        return;
+      }
 
-    // Add click listeners
-    container.querySelectorAll('.suggestion-chip').forEach((chip, i) => {
-      chip.addEventListener('click', () => {
-        console.log('Suggestion chip clicked:', step.options[i].value);
-        this.advance(step.options[i].value);
+      container.innerHTML = step.options.map((o, i) => `
+        <div class="suggestion-chip" data-option-index="${i}">
+          ${o.icon ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${o.icon}</svg>` : ''}
+          <span>${o.label}</span>
+        </div>`).join('');
+
+      // Add click listeners
+      container.querySelectorAll('.suggestion-chip').forEach((chip, i) => {
+        chip.addEventListener('click', () => {
+          console.log('Suggestion chip clicked:', step.options[i].value);
+          this.advance(step.options[i].value);
+        });
       });
-    });
 
-    container.classList.add('visible');
-    console.log('Rendered', step.options.length, 'suggestion chips');
+      container.classList.add('visible');
+      console.log('Rendered', step.options.length, 'horizontal suggestion chips');
+    } else {
+      // Subsequent steps: render vertically in response area
+      const container = document.querySelector('[data-section="response"]');
+      if (!container) {
+        console.error('Container [data-section="response"] not found');
+        return;
+      }
+
+      container.innerHTML = step.options.map((o, i) => `
+        <div class="suggestion-option fade-in" style="animation-delay:${i*0.1}s" data-option-index="${i}">
+          ${o.icon ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${o.icon}</svg>` : ''}
+          <span>${o.label}</span>
+        </div>`).join('');
+
+      // Add click listeners
+      container.querySelectorAll('.suggestion-option').forEach((option, i) => {
+        option.addEventListener('click', () => {
+          console.log('Suggestion option clicked:', step.options[i].value);
+          this.advance(step.options[i].value);
+        });
+      });
+
+      container.classList.add('visible');
+      console.log('Rendered', step.options.length, 'vertical suggestion options');
+    }
   }
 
   _renderResults(step) {

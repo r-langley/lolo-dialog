@@ -179,6 +179,28 @@
       ]
     },
     {
+      "id": "document-type",
+      "type": "suggestions",
+      "question": "What type of document would you like to create?",
+      "options": [
+        {
+          "label": "Personal will or trust document",
+          "value": "will",
+          "icon": "<path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z'/><polyline points='14,2 14,8 20,8'/>"
+        },
+        {
+          "label": "Medical directive or healthcare proxy",
+          "value": "medical",
+          "icon": "<path d='M22 12h-4l-3 9L9 3l-3 9H2'/>"
+        },
+        {
+          "label": "Financial power of attorney",
+          "value": "financial",
+          "icon": "<line x1='12' y1='1' x2='12' y2='23'/><path d='M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6'/>"
+        }
+      ]
+    },
+    {
       "id": "confirm",
       "type": "canvas",
       "question": "Save to your vault?",
@@ -246,19 +268,20 @@ const templates = {
       },
       {
         id: "step2",
-        type: "results",
-        question: "Select an item",
-        results: [
-          { id: "item1", quote: "<strong>Item 1</strong>", source: "Source A" },
-          { id: "item2", quote: "<strong>Item 2</strong>", source: "Source B" }
+        type: "suggestions",
+        question: "Now choose a specific action (vertical layout demo)",
+        options: [
+          { label: "Create a new document from scratch", value: "create", icon: "<path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z'/><polyline points='14,2 14,8 20,8'/>" },
+          { label: "Upload an existing document from your device", value: "upload", icon: "<path d='M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4'/><polyline points='17,8 12,3 7,8'/><line x1='12' y1='3' x2='12' y2='15'/>" },
+          { label: "Import from cloud storage services", value: "import", icon: "<path d='M22 12h-4l-3 9L9 3l-3 9H2'/>" }
         ]
       },
       {
         id: "confirm",
         type: "canvas",
-        question: "Confirm?",
+        question: "Confirm your selection?",
         docTitle: "Preview",
-        docName: "Selected Item",
+        docName: "Selected Action",
         actionLabel: "Confirm"
       }
     ],
