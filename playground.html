@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lolo Dialog Playground — Interactive Flow Builder</title>
+<title>Lolo Dialog Playground</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./prototype-dialog.html" media="none" onload="loadDialogStyles()">
 <style>
   :root {
     --white: #ffffff;
@@ -14,14 +13,11 @@
     --neutral-200: #f0eee6;
     --text-primary: #3d3935;
     --text-secondary: #6b665f;
-    --text-tertiary: #938d85;
     --borders-default: #f0eee6;
-    --lavender-100: #f0ecfa;
-    --lavender-200: #e0d9f4;
     --lavender-700: #7e6fca;
     --lavender-800: #6457a6;
-    --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-6: 24px;
-    --r-lg: 8px; --r-xl: 12px;
+    --sp-3: 12px; --sp-4: 16px;
+    --r-lg: 8px;
     --font: 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
@@ -52,7 +48,7 @@
     flex: 1;
   }
 
-  .toolbar select, .toolbar button {
+  .toolbar select, .toolbar button, .toolbar a {
     padding: 6px 12px;
     border: 1px solid var(--borders-default);
     border-radius: var(--r-lg);
@@ -60,6 +56,8 @@
     font-size: 13px;
     background: var(--white);
     cursor: pointer;
+    text-decoration: none;
+    color: var(--text-secondary);
   }
 
   .toolbar button {
@@ -85,6 +83,7 @@
     background: #1e1e1e;
     display: flex;
     flex-direction: column;
+    border-right: 1px solid #3e3e3e;
   }
 
   .editor-header {
@@ -96,14 +95,8 @@
     border-bottom: 1px solid #3e3e3e;
   }
 
-  .editor {
-    flex: 1;
-    overflow: auto;
-  }
-
   textarea {
-    width: 100%;
-    height: 100%;
+    flex: 1;
     padding: var(--sp-4);
     font-family: var(--font-mono);
     font-size: 13px;
@@ -119,6 +112,12 @@
     background: var(--canvas);
     position: relative;
     overflow: hidden;
+  }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
   }
 
   .error {
@@ -153,14 +152,13 @@
     <option value="multi">Multi-Step Flow</option>
   </select>
   <button onclick="testFlow()">▶ Test Flow</button>
-  <a href="./index.html" style="color: var(--text-secondary); text-decoration: none; font-size: 13px;">← Back</a>
+  <a href="./index.html">← Back</a>
 </div>
 
 <div class="main">
   <div class="editor-pane">
     <div class="editor-header">JSON Flow Definition</div>
-    <div class="editor">
-      <textarea id="jsonEditor" spellcheck="false">{
+    <textarea id="jsonEditor" spellcheck="false">{
   "userMessage": "Create or upload a new document",
   "steps": [
     {
@@ -171,12 +169,12 @@
         {
           "label": "Upload from device",
           "value": "upload",
-          "icon": "<path d=\\"M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4\\"/><polyline points=\\"17,8 12,3 7,8\\"/><line x1=\\"12\\" y1=\\"3\\" x2=\\"12\\" y2=\\"15\\"/>"
+          "icon": "<path d='M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4'/><polyline points='17,8 12,3 7,8'/><line x1='12' y1='3' x2='12' y2='15'/>"
         },
         {
           "label": "Create new",
           "value": "create",
-          "icon": "<line x1=\\"12\\" y1=\\"5\\" x2=\\"12\\" y2=\\"19\\"/><line x1=\\"5\\" y1=\\"12\\" x2=\\"19\\" y2=\\"12\\"/>"
+          "icon": "<line x1='12' y1='5' x2='12' y2='19'/><line x1='5' y1='12' x2='19' y2='12'/>"
         }
       ]
     },
@@ -192,17 +190,14 @@
   ],
   "successMessage": "Document saved successfully"
 }</textarea>
-    </div>
   </div>
 
   <div class="preview-pane" id="previewPane">
-    <iframe id="previewFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+    <iframe id="previewFrame" src="about:blank"></iframe>
   </div>
 </div>
 
-<script type="module">
-import { DialogFlow, showUserMessage, setState } from './lib/dialog-engine.js';
-
+<script>
 // Templates
 const templates = {
   simple: {
@@ -212,8 +207,8 @@ const templates = {
       type: "suggestions",
       question: "What would you like to do?",
       options: [
-        { label: "Option A", value: "a", icon: "<circle cx=\\"12\\" cy=\\"12\\" r=\\"10\\"/>" },
-        { label: "Option B", value: "b", icon: "<rect x=\\"3\\" y=\\"3\\" width=\\"18\\" height=\\"18\\" rx=\\"2\\"/>" }
+        { label: "Option A", value: "a", icon: "<circle cx='12' cy='12' r='10'/>" },
+        { label: "Option B", value: "b", icon: "<rect x='3' y='3' width='18' height='18' rx='2'/>" }
       ]
     }],
     successMessage: "Done!"
@@ -245,8 +240,8 @@ const templates = {
         type: "suggestions",
         question: "First, choose a category",
         options: [
-          { label: "Documents", value: "docs", icon: "<path d=\\"M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z\\"/><polyline points=\\"14,2 14,8 20,8\\"/>" },
-          { label: "Passwords", value: "pwd", icon: "<rect x=\\"3\\" y=\\"11\\" width=\\"18\\" height=\\"11\\" rx=\\"2\\"/><path d=\\"M7 11V7a5 5 0 0110 0v4\\"/>" }
+          { label: "Documents", value: "docs", icon: "<path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z'/><polyline points='14,2 14,8 20,8'/>" },
+          { label: "Passwords", value: "pwd", icon: "<rect x='3' y='11' width='18' height='11' rx='2'/><path d='M7 11V7a5 5 0 0110 0v4'/>" }
         ]
       },
       {
@@ -271,15 +266,15 @@ const templates = {
   }
 };
 
-window.loadTemplate = function() {
+function loadTemplate() {
   const select = document.getElementById('templateSelect');
   const template = templates[select.value];
   if (template) {
     document.getElementById('jsonEditor').value = JSON.stringify(template, null, 2);
   }
-};
+}
 
-window.testFlow = function() {
+function testFlow() {
   const jsonText = document.getElementById('jsonEditor').value;
   const errorDiv = document.getElementById('error');
   if (errorDiv) errorDiv.remove();
@@ -287,48 +282,11 @@ window.testFlow = function() {
   try {
     const flowData = JSON.parse(jsonText);
     
-    // Create preview HTML
-    const previewHTML = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./prototype-dialog.html">
-  <style>
-    body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-  </style>
-</head>
-<body>
-  <div id="dialogContainer"></div>
-  <script type="module">
-    import { DialogFlow, showUserMessage } from './lib/dialog-engine.js';
+    // Store flow data in localStorage for preview page to access
+    localStorage.setItem('playgroundFlow', JSON.stringify(flowData));
     
-    const flowData = ${JSON.stringify(flowData)};
-    
-    function triggerSuccess() {
-      alert(flowData.successMessage || 'Success!');
-    }
-    
-    window.triggerSuccess = triggerSuccess;
-    window.activeFlow = new DialogFlow({
-      steps: flowData.steps,
-      onComplete: () => triggerSuccess()
-    });
-    
-    if (flowData.userMessage) {
-      showUserMessage(flowData.userMessage, () => {
-        window.activeFlow.start();
-      });
-    } else {
-      window.activeFlow.start();
-    }
-  <\/script>
-</body>
-</html>`;
-
-    // Load into iframe
-    const iframe = document.getElementById('previewFrame');
-    iframe.srcdoc = previewHTML;
+    // Load preview page
+    document.getElementById('previewFrame').src = './_playground-preview.html?t=' + Date.now();
     
   } catch (e) {
     const errorDiv = document.createElement('div');
@@ -337,10 +295,10 @@ window.testFlow = function() {
     errorDiv.textContent = 'JSON Error: ' + e.message;
     document.getElementById('previewPane').appendChild(errorDiv);
   }
-};
+}
 
 // Auto-test on load
-setTimeout(() => window.testFlow(), 500);
+setTimeout(() => testFlow(), 500);
 </script>
 
 </body>

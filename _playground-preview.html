@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Include all dialog styles from prototype-dialog.html */
+  :root {
+    --white: #ffffff;
+    --canvas: #f6f5f2;
+    --neutral-50: #ffffff;
+    --neutral-100: #f6f5f2;
+    --neutral-200: #f0eee6;
+    --neutral-800: #3d3935;
+    --text-primary: #3d3935;
+    --text-secondary: #6b665f;
+    --text-tertiary: #938d85;
+    --borders-default: #f0eee6;
+    --lavender-100: #f0ecfa;
+    --lavender-200: #e0d9f4;
+    --lavender-500: #a599d9;
+    --lavender-700: #7e6fca;
+    --lavender-800: #6457a6;
+    --user-bubble: #4E7195;
+    --user-bubble-dark: #3d5a76;
+    --surfaces-default: #ffffff;
+    --surfaces-canvas: #f6f5f2;
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-6: 24px; --sp-8: 32px;
+    --r-sm: 4px; --r-md: 6px; --r-lg: 8px; --r-xl: 12px; --r-2xl: 16px; --r-full: 9999px;
+    --shadow-xxs: 0px 1px 1px rgba(16,24,40,0.07), 1px 1px 2px rgba(0,0,0,0.04);
+    --shadow-xl: 0px 12px 24px 4px rgba(16,24,40,0.07);
+    --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: #faf8f5;
+    min-height: 100vh;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  .scene {
+    position: fixed;
+    inset: 0;
+    background: var(--canvas);
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scene-content {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    opacity: 0.5;
+  }
+
+  .dialog {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(640px, calc(100vw - 32px));
+    background: var(--white);
+    border-radius: var(--r-2xl);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-2) var(--sp-3);
+    min-height: 52px;
+    flex-shrink: 0;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .logo {
+    flex-shrink: 0;
+    width: 20px;
+    height: 21px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-text {
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: -0.2px;
+    color: var(--neutral-800);
+  }
+
+  .header-text.thinking {
+    background: linear-gradient(90deg,
+      var(--lavender-500) 0%,
+      var(--lavender-700) 25%,
+      var(--lavender-500) 50%,
+      var(--lavender-700) 75%,
+      var(--lavender-500) 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 2.5s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: 200% center; }
+    100% { background-position: -50% center; }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: var(--r-md);
+    transition: background 0.15s ease;
+    color: var(--text-secondary);
+  }
+
+  .icon-btn:hover { background: var(--neutral-100); color: var(--text-primary); }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  .suggestions-row {
+    display: flex;
+    gap: var(--sp-3);
+    padding: var(--sp-1) var(--sp-3);
+    flex-shrink: 0;
+  }
+
+  .suggestion-chip {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .suggestion-chip:hover { background: var(--lavender-100); border-color: var(--lavender-200); }
+  .suggestion-chip svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-secondary); }
+  .suggestion-chip span { font-size: 12px; font-weight: 400; line-height: 16px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .user-message {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--sp-1) var(--sp-3);
+    flex-shrink: 0;
+  }
+
+  .user-bubble {
+    display: inline-block;
+    background: var(--user-bubble);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 20px;
+    padding: 10px 16px;
+    border-radius: 20px 20px 4px 20px;
+    max-width: 85%;
+    word-break: break-word;
+    animation: slideUpBubble 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  @keyframes slideUpBubble {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .response-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    padding: var(--sp-2) var(--sp-3);
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+
+  .result-row:hover { background: var(--lavender-100); }
+  .result-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-tertiary); }
+  .result-content { flex: 1; display: flex; align-items: center; gap: var(--sp-3); min-width: 0; }
+  .result-quote {
+    font-size: 14px; color: var(--text-primary); line-height: 20px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .result-source { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+
+  .result-row.detailed {
+    align-items: flex-start;
+    padding: var(--sp-3);
+  }
+  .result-row.detailed .result-content { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .result-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .result-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .result-badge.current { background: #e8f5e9; color: #2e7d32; }
+  .result-badge.archived { background: var(--neutral-200); color: var(--text-secondary); }
+  .result-badge.role { background: var(--lavender-100); color: var(--lavender-700); }
+  .result-details { font-size: 13px; color: var(--text-primary); line-height: 18px; }
+  .result-meta { font-size: 12px; color: var(--text-tertiary); }
+
+  .canvas-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-4);
+    flex: 1;
+  }
+
+  .doc-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--white);
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+
+  .doc-preview {
+    background: var(--canvas);
+    padding: var(--sp-4);
+    border-bottom: 1px solid var(--borders-default);
+  }
+
+  .doc-preview-inner {
+    background: var(--white);
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+    min-height: 200px;
+  }
+
+  .doc-preview-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--sp-3);
+  }
+
+  .doc-preview-line {
+    height: 8px;
+    background: var(--neutral-200);
+    border-radius: 4px;
+    margin-bottom: var(--sp-2);
+  }
+
+  .doc-info {
+    padding: var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+  }
+
+  .doc-title {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: var(--neutral-800);
+  }
+
+  .doc-action-btn {
+    padding: 10px 16px;
+    background: var(--lavender-700);
+    color: var(--white);
+    border: none;
+    border-radius: var(--r-lg);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .doc-action-btn:hover { background: var(--lavender-800); }
+
+  .input-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    flex-shrink: 0;
+  }
+
+  .input-field {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-md);
+    font-family: var(--font);
+    font-size: 14px;
+    background: var(--white);
+    color: var(--text-primary);
+  }
+
+  .input-field::placeholder { color: var(--text-tertiary); }
+
+  .send-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--lavender-700);
+    border: none;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    color: var(--white);
+  }
+
+  .send-btn:hover { background: var(--lavender-800); }
+  .send-btn:disabled { background: var(--neutral-200); color: var(--text-tertiary); cursor: not-allowed; }
+  .send-btn svg { width: 18px; height: 18px; }
+
+  .success-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .success-check {
+    width: 22px;
+    height: 22px;
+    background: #4caf50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+
+  .success-check svg { width: 12px; height: 12px; }
+
+  .fade-in { animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  [data-section] { display: none; }
+  [data-section].visible { display: flex; flex-direction: column; }
+  .suggestions-row[data-section].visible,
+  .action-suggestions[data-section].visible { display: flex; flex-direction: row; }
+  .user-message[data-section].visible { display: flex; flex-direction: row; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="scene-content"><p>Playground Preview</p></div>
+</div>
+
+<div class="dialog" id="dialog">
+  <div class="dialog-header">
+    <div class="header-left">
+      <div class="logo">
+        <svg width="20" height="21" viewBox="0 0 20 21" fill="none">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M9.72071 0.0773502C9.46927 0.115633 8.88638 0.239774 8.4254 0.353209C7.46097 0.590482 6.86913 0.840027 6.82128 1.02957C6.74483 1.3324 6.98073 1.49695 7.41012 1.44033C7.5494 1.42195 7.97772 1.31654 8.3619 1.20614C9.19304 0.967199 9.66509 0.90629 10.6905 0.905734C11.9359 0.905077 12.8574 1.07063 13.9138 1.48488C16.0716 2.33094 17.691 4.10679 18.4781 6.49003C18.8247 7.53927 18.9117 8.12917 18.9134 9.44068C18.9146 10.3289 18.8947 10.6874 18.822 11.0821C18.5006 12.8293 17.8742 14.2281 16.7706 15.6627C16.3668 16.1875 16.3142 16.3478 16.4689 16.5824C16.5864 16.7608 16.9016 16.8397 17.1252 16.7468C17.484 16.5978 18.3424 15.423 18.8654 14.3649C20.0095 12.0505 20.3058 9.2825 19.6747 6.80523C18.8903 3.72664 16.7786 1.40043 13.9246 0.470886C12.6283 0.0486634 10.944 -0.108963 9.72071 0.0773502ZM5.53368 1.49296C5.47578 1.56614 5.42838 1.66533 5.42838 1.71341C5.42838 1.76149 5.47578 1.86068 5.53368 1.93387C5.68709 2.1278 5.99131 2.12109 6.19425 1.91932C6.36122 1.75331 6.37935 1.63639 6.26363 1.47215C6.19861 1.37982 6.13608 1.35988 5.91177 1.35988C5.67754 1.35988 5.62405 1.37871 5.53368 1.49296ZM4.27037 2.01735C3.82137 2.28952 2.59331 3.38195 2.17068 3.88513C0.487934 5.88871 -0.324256 9.10922 0.120063 12.0164C0.280683 13.0675 0.693102 14.3797 1.13585 15.2484C1.80611 16.5635 2.88153 17.7984 4.04275 18.5864C5.35178 19.4748 6.67382 19.9442 8.3746 20.1245C9.18171 20.21 9.80991 20.2164 10.5995 20.1469C12.394 19.989 14.6226 19.1209 14.6226 18.5799C14.6226 18.4855 14.5762 18.4016 14.4843 18.3297C14.2979 18.1839 14.1667 18.2126 13.2003 18.6105C12.0224 19.0955 11.1878 19.2731 9.84771 19.3238C8.98106 19.3566 8.27245 19.2966 7.53645 19.1282C4.27057 18.3808 1.90374 15.7396 1.2314 12.0922C1.11426 11.4567 1.09699 9.43291 1.20361 8.83462C1.51555 7.08447 2.16575 5.58861 3.17087 4.30876C3.60031 3.762 3.97188 3.39149 4.60293 2.88089C4.88933 2.64917 5.1236 2.44932 5.1236 2.43669C5.1236 2.37791 4.99707 2.17982 4.87932 2.05432C4.72094 1.88553 4.50906 1.87265 4.27037 2.01735ZM9.38576 2.07058C8.11762 2.20437 6.54246 2.86796 5.149 3.85538C3.62423 4.93584 2.55658 6.22624 2.1273 7.5074C1.78589 8.52649 1.89689 9.12407 2.40094 8.98033C2.65244 8.90861 2.78009 8.73715 3.16706 7.95149C3.86862 6.5272 4.73846 5.39169 5.74043 4.5922C7.15796 3.46109 8.65637 2.95942 10.6351 2.95351C11.8664 2.94982 12.6212 3.11215 13.5744 3.58563C14.4585 4.02477 15.2908 4.72265 16.0756 5.68296C16.4739 6.17028 16.543 6.21846 16.8433 6.21846C17.5047 6.21846 17.1862 5.26563 16.1836 4.24462C15.2409 3.28452 14.0298 2.6221 12.5653 2.26563C11.6939 2.05351 10.3366 1.97023 9.38576 2.07058ZM9.06036 4.24033C7.52573 4.56109 6.01732 5.48775 4.80414 6.85503C3.87207 7.90548 3.33042 8.9824 3.05815 10.3263C2.92689 10.9744 2.92633 12.6714 3.05719 13.2791C3.5459 15.5485 4.99184 17.1705 7.15548 17.8766C8.02562 18.1606 8.67902 18.2536 9.79691 18.2524C11.4661 18.2506 12.739 17.9145 13.9115 17.1659C15.3834 16.226 16.4491 14.6144 16.8321 12.7488C17.1801 11.0538 16.9386 9.1473 16.186 7.64775C15.7058 6.69109 14.8609 5.69548 14.1146 5.20679C13.37 4.71922 12.4664 4.36306 11.6002 4.21573C10.9426 4.10387 9.65336 4.11639 9.06036 4.24033ZM11.3808 5.05023C13.5526 5.42811 15.323 7.41083 15.7971 9.99624C15.901 10.5628 15.8877 11.9836 15.7734 12.5215C15.104 15.6728 12.462 17.6312 9.23317 17.3695C7.71043 17.2461 6.53809 16.7202 5.52998 15.7084C4.73607 14.9115 4.29729 14.0764 4.08044 12.9496C3.98311 12.4439 3.98164 11.0908 4.07785 10.5941C4.46817 8.57922 6.15371 6.45078 8.09522 5.52129C9.18745 4.99836 10.2265 4.84937 11.3808 5.05023ZM12.0436 6.72503C11.7624 6.85977 11.853 7.10659 12.498 7.96316C13.2184 8.91967 13.423 9.31962 13.59 10.0972C13.7219 10.7121 13.7119 11.6492 13.567 12.229C13.1888 13.7433 12.1477 14.8454 10.6605 15.3061C10.1144 15.4752 9.17577 15.4754 8.62858 15.3065C7.34281 14.9095 6.58518 14.1481 6.23448 12.9003C6.07365 12.328 6.07376 11.3663 6.23473 10.7429C6.58396 9.39073 7.27856 8.49422 8.22221 8.1777C8.49692 8.08558 8.63818 8.07008 9.0633 8.08553C9.51626 8.10205 9.61226 8.12275 9.90953 8.26826C10.5567 8.58503 11.1149 9.37952 11.2945 10.2394C11.4048 10.768 11.3949 11.6066 11.2727 12.0819C11.0031 13.1297 10.4429 13.7063 9.63207 13.7703C9.16241 13.8074 8.90197 13.7197 8.61878 13.4291C8.31852 13.1209 8.21687 12.8175 8.18447 12.1326C8.12376 10.8507 8.71433 9.77467 9.15514 10.3639C9.24566 10.4848 9.26502 10.6085 9.29534 11.2584C9.34492 12.3201 9.41035 12.471 9.82129 12.471C10.2282 12.471 10.4388 11.9773 10.3915 11.1345C10.3058 9.60942 9.47288 8.86351 8.38735 9.33977C7.73908 9.62422 7.23914 10.46 7.10127 11.4899C6.93893 12.7029 7.42155 13.8573 8.27118 14.2883C8.95292 14.634 10.018 14.6115 10.7872 14.235C12.3692 13.4607 12.9951 11.1511 12.1268 9.29179C11.7376 8.45831 11.1696 7.85624 10.4319 7.49508C9.94707 7.2577 9.55608 7.16796 9.00702 7.16796C7.22969 7.16796 5.6398 8.50831 5.11304 10.4508C5.01078 10.8279 4.99691 10.9936 4.9993 11.8144C5.00184 12.6827 5.01175 12.7802 5.13945 13.1931C5.37037 13.9395 5.6526 14.425 6.15437 14.939C7.56434 16.3833 10.0165 16.7268 12.0054 15.7585C13.4274 15.0662 14.3121 13.916 14.6577 12.3105C14.7253 11.9964 14.747 11.6795 14.7435 11.0568C14.7382 10.1022 14.6676 9.78988 14.2364 8.81084C13.552 7.25715 12.6747 6.4226 12.0436 6.72503ZM16.8899 6.7676C16.7262 6.89563 16.7115 7.12361 16.8577 7.26897C17.001 7.41144 17.3212 7.40498 17.4857 7.25634C17.6798 7.08094 17.699 6.93922 17.5489 6.79003C17.385 6.62705 17.0828 6.61674 16.8899 6.7676ZM15.6567 17.0134C15.3793 17.1313 15.3015 17.494 15.5093 17.7005C15.7145 17.9046 16.1038 17.8577 16.3105 17.604C16.4305 17.4566 16.4222 17.2998 16.2861 17.1424C16.1603 16.9969 15.8467 16.9327 15.6567 17.0134Z" fill="#7E6FCA"/>
+        </svg>
+      </div>
+      <span class="header-text" id="headerText">Loading...</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="closeBtn">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M4 4l8 8M12 4l-8 8"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="suggestions-row" data-section="initial"></div>
+
+  <div class="user-message" data-section="user-message">
+    <div class="user-bubble" id="userBubble"></div>
+  </div>
+
+  <div class="response-area" data-section="response"></div>
+
+  <div class="canvas-area" data-section="canvas"></div>
+
+  <div class="input-bar" id="inputBar">
+    <input class="input-field" id="inputField" type="text" placeholder="Ask something..." autocomplete="off"/>
+    <button class="send-btn" id="sendBtn">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 14V4"/><path d="M4 8l5-5 5 5"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script type="module">
+import { DialogFlow } from './lib/dialog-engine.js';
+
+// Get flow data from localStorage
+const flowDataStr = localStorage.getItem('playgroundFlow');
+if (!flowDataStr) {
+  document.getElementById('headerText').textContent = 'No flow data';
+  throw new Error('No flow data in localStorage');
+}
+
+const flowData = JSON.parse(flowDataStr);
+
+// Success handler
+function triggerSuccess() {
+  const headerText = document.getElementById('headerText');
+  headerText.style.display = 'none';
+  
+  let si = document.getElementById('successIndicator');
+  if (!si) {
+    si = document.createElement('div');
+    si.id = 'successIndicator';
+    si.className = 'success-indicator';
+    si.innerHTML = `
+      <div class="success-check">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </div>
+      <span style="font-size:18px;font-weight:500;letter-spacing:-0.4px;color:var(--text-primary);">${flowData.successMessage || 'Success!'}</span>
+    `;
+    headerText.parentNode.insertBefore(si, headerText.nextSibling);
+  }
+  si.style.display = 'flex';
+}
+
+window.triggerSuccess = triggerSuccess;
+
+// Create flow
+window.activeFlow = new DialogFlow({
+  steps: flowData.steps,
+  onComplete: () => triggerSuccess()
+});
+
+// Show user message if provided, then start
+if (flowData.userMessage) {
+  document.getElementById('userBubble').textContent = flowData.userMessage;
+  document.querySelectorAll('[data-section]').forEach(el => el.classList.remove('visible'));
+  document.querySelector('[data-section="user-message"]').classList.add('visible');
+  
+  document.getElementById('headerText').textContent = 'Thinking...';
+  document.getElementById('headerText').className = 'header-text thinking';
+  
+  setTimeout(() => {
+    window.activeFlow.start();
+  }, 2400);
+} else {
+  window.activeFlow.start();
+}
+</script>
+
+</body>
+</html>
