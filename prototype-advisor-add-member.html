@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lolo — Advisor: Households</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: { colors: { lolo: { '50': '#f0f4ff', '100': '#dde6ff', '500': '#4f6ef7', '600': '#3b55e6', '900': '#1a2a6c' } } } }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #f8f9fc; }
+  .fade-in { animation: fadeIn 0.18s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .hh-card { transition: box-shadow 0.15s, transform 0.15s; cursor: default; }
+  .hh-card:hover { box-shadow: 0 8px 24px rgba(79,110,247,0.1); transform: translateY(-1px); }
+  .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+  .search-result { cursor: pointer; transition: background 0.1s; }
+  .search-result:hover { background: #f0f4ff; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; color: #6b7280; transition: all 0.1s; cursor: pointer; }
+  .nav-item:hover { background: #f9fafb; }
+  .nav-item.active { background: #f0f4ff; color: #4f6ef7; font-weight: 500; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ── Layout ── -->
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-56 min-h-screen bg-white border-r border-gray-200 flex flex-col fixed top-0 left-0 bottom-0">
+    <!-- Logo -->
+    <div class="px-4 py-4 border-b border-gray-100 flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-lolo-500 flex items-center justify-center text-white font-bold text-sm">L</div>
+      <div>
+        <div class="font-semibold text-gray-900 text-sm leading-tight">Lolo</div>
+        <div class="text-gray-400 text-xs leading-tight">Advisor Portal</div>
+      </div>
+    </div>
+    <!-- Nav -->
+    <nav class="flex-1 p-3 flex flex-col gap-0.5">
+      <div class="nav-item active" onclick="showHouseholds()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+        Households
+      </div>
+      <div class="nav-item" onclick="showContacts()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Contacts
+      </div>
+      <div class="nav-item">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        Sharing
+      </div>
+      <div class="nav-item">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Reports
+      </div>
+    </nav>
+    <!-- User -->
+    <div class="p-3 border-t border-gray-100">
+      <div class="flex items-center gap-2.5 px-3 py-2">
+        <div class="w-8 h-8 rounded-full bg-lolo-100 text-lolo-600 flex items-center justify-center font-semibold text-sm">SC</div>
+        <div>
+          <div class="text-sm font-medium text-gray-900">Sarah Chen</div>
+          <div class="text-xs text-gray-400">Wealth Advisors Co.</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="ml-56 flex-1 flex flex-col">
+
+    <!-- ──────────────── HOUSEHOLDS VIEW ──────────────── -->
+    <div id="view-households" class="fade-in flex-1">
+      <!-- Header -->
+      <header class="bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between sticky top-0 z-10">
+        <div>
+          <h1 class="text-lg font-semibold text-gray-900">Households</h1>
+          <p class="text-sm text-gray-400 mt-0.5">3 active · 1 pending setup</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+            <input class="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-lolo-500/20 w-52" placeholder="Search households…">
+          </div>
+          <button onclick="openSearch('new-household')" class="flex items-center gap-2 bg-lolo-500 hover:bg-lolo-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            New Household
+          </button>
+        </div>
+      </header>
+
+      <!-- Household Cards Grid -->
+      <div class="p-8 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+
+        <!-- Card: Johnson -->
+        <div class="hh-card bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <!-- Card Top -->
+          <div class="p-5 pb-4">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg leading-none">J</div>
+                <div>
+                  <div class="font-semibold text-gray-900">Johnson</div>
+                  <div class="text-xs text-gray-400 mt-0.5">David &amp; Emma Johnson</div>
+                </div>
+              </div>
+              <span class="tag bg-emerald-50 text-emerald-700">Active</span>
+            </div>
+            <!-- Stats row -->
+            <div class="flex items-center gap-4 text-sm mb-4">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="text-gray-600">4 members</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-amber-600 text-xs font-medium">1 pending invite</span>
+              </div>
+            </div>
+            <!-- Member avatars -->
+            <div class="flex items-center gap-1 mb-4">
+              <div class="w-7 h-7 rounded-full bg-violet-200 text-violet-700 text-xs font-bold flex items-center justify-center border-2 border-white -ml-0">DJ</div>
+              <div class="w-7 h-7 rounded-full bg-pink-200 text-pink-700 text-xs font-bold flex items-center justify-center border-2 border-white -ml-1">EJ</div>
+              <div class="w-7 h-7 rounded-full bg-amber-200 text-amber-700 text-xs font-bold flex items-center justify-center border-2 border-white -ml-1">SJ</div>
+              <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-500 text-xs font-bold flex items-center justify-center border-2 border-white -ml-1">+1</div>
+            </div>
+            <!-- Domain access -->
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">Vault</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600 border border-green-100">Wealth</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 border border-violet-100">Legacy</span>
+            </div>
+          </div>
+          <!-- Card Footer -->
+          <div class="border-t border-gray-100 px-5 py-3 flex items-center gap-2 bg-gray-50/50">
+            <button onclick="openSearch('Johnson')" class="flex-1 text-xs font-medium text-lolo-600 hover:text-lolo-700 border border-lolo-200 hover:border-lolo-300 bg-white hover:bg-lolo-50 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              Add Member
+            </button>
+            <button class="text-xs text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-300 bg-white py-1.5 px-3 rounded-lg transition-all">View</button>
+            <button class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-gray-200 transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card: Martinez -->
+        <div class="hh-card bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div class="p-5 pb-4">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-lg leading-none">M</div>
+                <div>
+                  <div class="font-semibold text-gray-900">Martinez</div>
+                  <div class="text-xs text-gray-400 mt-0.5">Carlos Martinez</div>
+                </div>
+              </div>
+              <span class="tag bg-emerald-50 text-emerald-700">Active</span>
+            </div>
+            <div class="flex items-center gap-4 text-sm mb-4">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="text-gray-600">2 members</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 mb-4">
+              <div class="w-7 h-7 rounded-full bg-amber-200 text-amber-700 text-xs font-bold flex items-center justify-center border-2 border-white">CM</div>
+              <div class="w-7 h-7 rounded-full bg-orange-200 text-orange-700 text-xs font-bold flex items-center justify-center border-2 border-white -ml-1">LM</div>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">Vault</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600 border border-green-100">Wealth</span>
+            </div>
+          </div>
+          <div class="border-t border-gray-100 px-5 py-3 flex items-center gap-2 bg-gray-50/50">
+            <button onclick="openSearch('Martinez')" class="flex-1 text-xs font-medium text-lolo-600 hover:text-lolo-700 border border-lolo-200 hover:border-lolo-300 bg-white hover:bg-lolo-50 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              Add Member
+            </button>
+            <button class="text-xs text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-300 bg-white py-1.5 px-3 rounded-lg transition-all">View</button>
+            <button class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-gray-200 transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card: Chen -->
+        <div class="hh-card bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div class="p-5 pb-4">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-lg leading-none">C</div>
+                <div>
+                  <div class="font-semibold text-gray-900">Chen</div>
+                  <div class="text-xs text-gray-400 mt-0.5">Wei &amp; Mei Chen</div>
+                </div>
+              </div>
+              <span class="tag bg-emerald-50 text-emerald-700">Active</span>
+            </div>
+            <div class="flex items-center gap-4 text-sm mb-4">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="text-gray-600">3 members</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-blue-600 text-xs font-medium">Reviewed last week</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 mb-4">
+              <div class="w-7 h-7 rounded-full bg-teal-200 text-teal-700 text-xs font-bold flex items-center justify-center border-2 border-white">WC</div>
+              <div class="w-7 h-7 rounded-full bg-cyan-200 text-cyan-700 text-xs font-bold flex items-center justify-center border-2 border-white -ml-1">MC</div>
+              <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-500 text-xs font-bold flex items-center justify-center border-2 border-white -ml-1">+1</div>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">Vault</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600 border border-green-100">Wealth</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100">Health</span>
+            </div>
+          </div>
+          <div class="border-t border-gray-100 px-5 py-3 flex items-center gap-2 bg-gray-50/50">
+            <button onclick="openSearch('Chen')" class="flex-1 text-xs font-medium text-lolo-600 hover:text-lolo-700 border border-lolo-200 hover:border-lolo-300 bg-white hover:bg-lolo-50 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              Add Member
+            </button>
+            <button class="text-xs text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-300 bg-white py-1.5 px-3 rounded-lg transition-all">View</button>
+            <button class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-gray-200 transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card: Pending setup -->
+        <div class="hh-card bg-white rounded-2xl border border-dashed border-gray-300 overflow-hidden opacity-75">
+          <div class="p-5 pb-4">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="font-semibold text-gray-600">Patel</div>
+                  <div class="text-xs text-gray-400 mt-0.5">Priya Patel</div>
+                </div>
+              </div>
+              <span class="tag bg-amber-50 text-amber-700">⏳ Setup</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-sm mb-5">
+              <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span class="text-amber-600 text-xs">Awaiting client acceptance</span>
+            </div>
+            <p class="text-xs text-gray-400">Invited Feb 12 · No account created yet</p>
+          </div>
+          <div class="border-t border-gray-200 px-5 py-3 flex items-center gap-2 bg-gray-50/30">
+            <button class="flex-1 text-xs font-medium text-gray-400 border border-gray-200 bg-white py-1.5 rounded-lg">Resend Invite</button>
+            <button class="text-xs text-gray-400 border border-gray-200 bg-white py-1.5 px-3 rounded-lg">Cancel</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ──────────────── CONTACTS VIEW ──────────────── -->
+    <div id="view-contacts" class="fade-in flex-1 hidden">
+      <header class="bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between sticky top-0 z-10">
+        <div>
+          <h1 class="text-lg font-semibold text-gray-900">Contacts</h1>
+          <p class="text-sm text-gray-400 mt-0.5">All members across your households</p>
+        </div>
+        <button onclick="openSearch(null)" class="flex items-center gap-2 bg-lolo-500 hover:bg-lolo-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add Member
+        </button>
+      </header>
+      <div class="p-8">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="relative flex-1 max-w-xs">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+            <input class="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none" placeholder="Search contacts…">
+          </div>
+          <select class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-600 focus:outline-none">
+            <option>All households</option><option>Johnson</option><option>Martinez</option><option>Chen</option>
+          </select>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead><tr class="text-xs text-gray-500 font-medium border-b border-gray-100">
+              <th class="text-left px-4 py-3">Name</th>
+              <th class="text-left px-4 py-3">Household</th>
+              <th class="text-left px-4 py-3">Relationship</th>
+              <th class="text-left px-4 py-3">Access</th>
+              <th class="text-left px-4 py-3">Status</th>
+              <th class="px-4 py-3"></th>
+            </tr></thead>
+            <tbody id="contacts-tbody">
+              <tr class="border-b border-gray-50">
+                <td class="px-4 py-3"><div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-semibold text-xs">EJ</div><div><div class="font-medium text-gray-900">Emma Johnson</div><div class="text-gray-400 text-xs">emma@email.com</div></div></div></td>
+                <td class="px-4 py-3 text-gray-600">Johnson</td>
+                <td class="px-4 py-3 text-gray-600">Spouse</td>
+                <td class="px-4 py-3"><span class="tag bg-gray-100 text-gray-600">Co-Owner · All</span></td>
+                <td class="px-4 py-3"><span class="tag bg-emerald-50 text-emerald-700">Active</span></td>
+                <td class="px-4 py-3 text-gray-400 text-xs cursor-pointer">···</td>
+              </tr>
+              <tr class="border-b border-gray-50">
+                <td class="px-4 py-3"><div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center font-semibold text-xs">SJ</div><div><div class="font-medium text-gray-900">Sophie Johnson</div><div class="text-gray-400 text-xs">sophie@email.com</div></div></div></td>
+                <td class="px-4 py-3 text-gray-600">Johnson</td>
+                <td class="px-4 py-3 text-gray-600">Daughter</td>
+                <td class="px-4 py-3"><span class="tag bg-gray-100 text-gray-600">Collaborator · Vault, Legacy</span></td>
+                <td class="px-4 py-3"><span class="tag bg-emerald-50 text-emerald-700">Active</span></td>
+                <td class="px-4 py-3 text-gray-400 text-xs cursor-pointer">···</td>
+              </tr>
+              <tr class="border-b border-gray-50">
+                <td class="px-4 py-3"><div class="flex items-center gap-2.5"><div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-semibold text-xs">CM</div><div><div class="font-medium text-gray-900">Carlos Martinez</div><div class="text-gray-400 text-xs">carlos@email.com</div></div></div></td>
+                <td class="px-4 py-3 text-gray-600">Martinez</td>
+                <td class="px-4 py-3 text-gray-600">Owner</td>
+                <td class="px-4 py-3"><span class="tag bg-gray-100 text-gray-600">Owner · All</span></td>
+                <td class="px-4 py-3"><span class="tag bg-emerald-50 text-emerald-700">Active</span></td>
+                <td class="px-4 py-3 text-gray-400 text-xs cursor-pointer">···</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end layout -->
+
+
+<!-- ══════════ MODAL: AI SEARCH + NAME INPUT ══════════ -->
+<div id="modal-search" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden fade-in">
+
+    <div class="px-6 pt-6">
+      <div class="flex items-start justify-between mb-1">
+        <div>
+          <h2 class="text-base font-semibold text-gray-900">Add Member</h2>
+          <p class="text-sm text-gray-400 mt-0.5" id="search-household-label">to Johnson Household</p>
+        </div>
+        <button onclick="closeAll()" class="text-gray-400 hover:text-gray-600 mt-0.5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="mt-4 mb-1 relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+        <input
+          id="search-input"
+          oninput="handleSearch(this.value)"
+          class="w-full pl-9 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-lolo-500/20 focus:border-lolo-400 transition-all"
+          placeholder="Type a name…"
+          autocomplete="off"
+        >
+      </div>
+      <p class="text-xs text-gray-400 mb-3">AI scans your documents — if this person appears anywhere, we'll recognize them.</p>
+    </div>
+
+    <!-- Results (only shown when query is active) -->
+    <div id="search-results" class="border-t border-gray-100 overflow-hidden hidden max-h-52 overflow-y-auto"></div>
+
+    <!-- No results state -->
+    <div id="search-no-results" class="hidden px-6 py-3 bg-amber-50 border-t border-amber-100">
+      <p class="text-xs text-amber-700">
+        <span class="font-semibold">No matches found.</span> You can still invite them — continue to the form below.
+      </p>
+    </div>
+
+    <!-- Inline invite form — always visible below search -->
+    <div class="px-6 pt-4 pb-2">
+      <div class="flex flex-col gap-3">
+
+        <!-- Household selector — only shown if not pre-selected from a card -->
+        <div id="household-field" class="hidden">
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Household</label>
+          <select class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-lolo-500/20 focus:border-lolo-400">
+            <option>Johnson Household</option>
+            <option>Martinez Household</option>
+            <option>Chen Household</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Email address</label>
+          <input id="invite-email" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-lolo-500/20 focus:border-lolo-400" placeholder="name@email.com">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Relationship to household</label>
+          <select id="invite-relationship" onchange="updateAiSuggestion(this.value)" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-lolo-500/20 focus:border-lolo-400">
+            <option value="">Choose…</option>
+            <optgroup label="Family">
+              <option value="spouse">Spouse / Partner</option>
+              <option value="child">Child (adult)</option>
+              <option value="parent">Parent</option>
+              <option value="sibling">Sibling</option>
+            </optgroup>
+            <optgroup label="Professional">
+              <option value="attorney">Attorney</option>
+              <option value="cpa">CPA / Accountant</option>
+              <option value="planner">Financial Planner</option>
+              <option value="trustee">Trustee</option>
+            </optgroup>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <!-- Trust Level — always visible -->
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-2">Access Level</label>
+          <div class="flex flex-col gap-1.5" id="trust-radios">
+            <label class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+              <input type="radio" name="adv-trust" value="co-owner" class="w-4 h-4 accent-lolo-500" onchange="clearAiHint()">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Co-Owner</p>
+                <p class="text-xs text-gray-400">Full control except workspace deletion</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+              <input type="radio" name="adv-trust" value="collaborator" class="w-4 h-4 accent-lolo-500" onchange="clearAiHint()">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Collaborator</p>
+                <p class="text-xs text-gray-400">Manage content and invite Viewers</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+              <input type="radio" name="adv-trust" value="viewer" class="w-4 h-4 accent-lolo-500" onchange="clearAiHint()">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Viewer</p>
+                <p class="text-xs text-gray-400">Read-only access to granted domains</p>
+              </div>
+            </label>
+          </div>
+          <!-- AI suggestion hint — shows when relationship chosen but no trust level selected yet -->
+          <div id="ai-suggestion" class="hidden mt-2 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+            <span class="text-sm leading-none flex-shrink-0 mt-0.5">✨</span>
+            <p class="text-xs text-amber-800" id="ai-suggestion-text"></p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5">Note <span class="text-gray-400 font-normal">(optional)</span></label>
+          <textarea rows="2" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-lolo-500/20 focus:border-lolo-400 resize-none" placeholder="Add context for the invitation…"></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-t border-gray-100 mt-2 flex items-center justify-between">
+      <button onclick="closeAll()" class="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+      <button onclick="sendInvite()" class="text-sm px-5 py-2 rounded-lg bg-lolo-500 hover:bg-lolo-600 text-white font-medium transition-colors">Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success Toast -->
+<div id="toast" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 fade-in">
+  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+  <span id="toast-msg">Invitation sent — visible as pending</span>
+</div>
+
+<script>
+// ── Mock AI-recognized people ──
+const knownPeople = [
+  { name: 'Grace Miller',  detail: 'Found in Last Will & Testament',    tag: 'Not on Lolo',   initials: 'GM', color: 'bg-slate-100 text-slate-600' },
+  { name: 'David Johnson', detail: 'Owner · Johnson Household',          tag: 'Active',        initials: 'DJ', color: 'bg-violet-100 text-violet-700' },
+  { name: 'Sophie Johnson',detail: 'Named in Power of Attorney',         tag: 'Not on Lolo',   initials: 'SJ', color: 'bg-pink-100 text-pink-700' },
+  { name: 'James Patel',   detail: 'Named as trustee in Trust Doc.pdf',  tag: 'Not on Lolo',   initials: 'JP', color: 'bg-teal-100 text-teal-700' },
+];
+
+const aiSuggestions = {
+  spouse:   'AI suggests Co-Owner · All domains — spouses typically share full access. Select Co-Owner above to apply.',
+  child:    'AI suggests Collaborator · Vault + Legacy — adult children commonly handle executor and POA duties. Select Collaborator above to apply.',
+  parent:   'AI suggests Collaborator · Vault — document and record management. Select Collaborator above to apply.',
+  sibling:  'AI suggests Viewer · Vault — view-only for most sibling relationships. Select Viewer above to apply.',
+  attorney: 'AI suggests Collaborator · Legacy — estate planning access for attorneys. Select Collaborator above to apply.',
+  cpa:      'AI suggests Collaborator · Wealth — financial records access for CPAs. Select Collaborator above to apply.',
+  planner:  'AI suggests Viewer · Wealth — read-only for financial planners. Select Viewer above to apply.',
+  trustee:  'AI suggests Collaborator · Legacy + Vault — trustees need estate and document access. Select Collaborator above to apply.',
+  other:    'AI suggests Viewer · Vault — default for unrecognized relationships. Select a level above to apply.',
+};
+
+let selectedHousehold = null;
+let searchTimer;
+
+function handleSearch(val) {
+  clearTimeout(searchTimer);
+  const results = document.getElementById('search-results');
+  const noResults = document.getElementById('search-no-results');
+  results.classList.add('hidden');
+  noResults.classList.add('hidden');
+  if (!val.trim() || val.length < 2) return;
+
+  searchTimer = setTimeout(() => {
+    const q = val.toLowerCase();
+    const matches = knownPeople.filter(p => p.name.toLowerCase().includes(q));
+    if (matches.length) {
+      results.innerHTML = matches.map(p => `
+        <div class="search-result flex items-center gap-3 px-6 py-3 border-b border-gray-50 last:border-0" onclick="selectPerson('${p.name}')">
+          <div class="w-9 h-9 rounded-full ${p.color} flex items-center justify-center font-semibold text-sm flex-shrink-0">${p.initials}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-gray-900">${p.name}</div>
+            <div class="text-xs text-gray-400">${p.detail}</div>
+          </div>
+          <span class="text-xs font-medium flex-shrink-0 ${p.tag === 'Active' ? 'text-emerald-600' : 'text-amber-600'}">${p.tag}</span>
+        </div>
+      `).join('');
+      results.classList.remove('hidden');
+    } else {
+      noResults.classList.remove('hidden');
+    }
+  }, 300);
+}
+
+function selectPerson(name) {
+  // Fill the search input with their name and collapse results
+  document.getElementById('search-input').value = name;
+  document.getElementById('search-results').classList.add('hidden');
+  document.getElementById('search-no-results').classList.add('hidden');
+  // Focus email field to continue
+  document.getElementById('invite-email').focus();
+}
+
+function updateAiSuggestion(val) {
+  const box = document.getElementById('ai-suggestion');
+  const text = document.getElementById('ai-suggestion-text');
+  const anyChecked = document.querySelector('input[name="adv-trust"]:checked');
+  if (val && aiSuggestions[val] && !anyChecked) {
+    text.textContent = aiSuggestions[val];
+    box.classList.remove('hidden');
+  } else {
+    box.classList.add('hidden');
+  }
+}
+
+function clearAiHint() {
+  // Once user picks a trust level, hide the AI hint
+  document.getElementById('ai-suggestion').classList.add('hidden');
+}
+
+function openSearch(household) {
+  selectedHousehold = household;
+  const label = document.getElementById('search-household-label');
+  const hhField = document.getElementById('household-field');
+
+  if (household && household !== 'new-household') {
+    label.textContent = 'to ' + household + ' Household';
+    hhField.classList.add('hidden');
+  } else {
+    label.textContent = 'Select a household below';
+    hhField.classList.remove('hidden');
+  }
+
+  // Reset form
+  document.getElementById('search-input').value = '';
+  document.getElementById('invite-email').value = '';
+  document.getElementById('invite-relationship').value = '';
+  document.getElementById('search-results').classList.add('hidden');
+  document.getElementById('search-no-results').classList.add('hidden');
+  document.getElementById('ai-suggestion').classList.add('hidden');
+  document.querySelectorAll('input[name="adv-trust"]').forEach(r => r.checked = false);
+
+  document.getElementById('modal-search').classList.remove('hidden');
+  setTimeout(() => document.getElementById('search-input').focus(), 80);
+}
+
+function sendInvite() {
+  const name = document.getElementById('search-input').value.trim() || 'New member';
+  const hh = selectedHousehold || 'Johnson';
+  closeAll();
+
+  // Add pending row to contacts table
+  const tbody = document.getElementById('contacts-tbody');
+  const initials = name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() || '??';
+  const row = document.createElement('tr');
+  row.className = 'border-b border-gray-50 fade-in';
+  row.innerHTML = `
+    <td class="px-4 py-3"><div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-full bg-lolo-100 text-lolo-600 flex items-center justify-center font-semibold text-xs">${initials}</div>
+      <div><div class="font-medium text-gray-900">${name}</div><div class="text-gray-400 text-xs">Invited · no account yet</div></div>
+    </div></td>
+    <td class="px-4 py-3 text-gray-600">${hh}</td>
+    <td class="px-4 py-3 text-gray-600">—</td>
+    <td class="px-4 py-3"><span class="tag bg-gray-100 text-gray-500">Pending</span></td>
+    <td class="px-4 py-3"><span class="tag bg-amber-50 text-amber-700">⏳ Pending</span></td>
+    <td class="px-4 py-3 text-gray-400 text-xs cursor-pointer">···</td>
+  `;
+  tbody.insertBefore(row, tbody.firstChild);
+
+  document.getElementById('toast-msg').textContent = `Invite sent to ${name}`;
+  const toast = document.getElementById('toast');
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 3500);
+}
+
+function closeAll() {
+  document.getElementById('modal-search').classList.add('hidden');
+}
+
+// Nav switching
+function showHouseholds() {
+  document.getElementById('view-households').classList.remove('hidden');
+  document.getElementById('view-contacts').classList.add('hidden');
+  document.querySelectorAll('.nav-item').forEach((el, i) => el.classList.toggle('active', i === 0));
+}
+function showContacts() {
+  document.getElementById('view-contacts').classList.remove('hidden');
+  document.getElementById('view-households').classList.add('hidden');
+  document.querySelectorAll('.nav-item').forEach((el, i) => el.classList.toggle('active', i === 1));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lolo — Access Configuration</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #f8f9fc; }
+  .fade-in { animation: fadeIn 0.16s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  .cell-btn { transition: all 0.12s; }
+  .cell-btn:hover { filter: brightness(0.94); transform: scale(1.02); }
+  tr:hover td { background: #fafaf9; }
+  tr.locked-row:hover td { background: transparent; }
+  .perm-menu { animation: fadeIn 0.12s ease; }
+  .save-bar { animation: slideUp 0.2s ease; }
+  @keyframes slideUp { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+</style>
+</head>
+<body class="min-h-screen pb-28">
+
+<!-- Top Nav -->
+<nav class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
+  <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center text-white font-bold text-sm">L</div>
+    <span class="font-semibold text-gray-900">Lolo</span>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-sm text-gray-500 hidden sm:inline">Johnson Household</span>
+    <div class="w-8 h-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-semibold text-sm">DJ</div>
+  </div>
+</nav>
+
+<div class="max-w-4xl mx-auto px-4 py-6">
+
+  <!-- Back -->
+  <a href="#" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-5 transition-colors">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    Sharing
+  </a>
+
+  <!-- Page header -->
+  <div class="flex items-start justify-between mb-5">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900">Access Configuration</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Set default domain access for each trust level across your household.</p>
+    </div>
+  </div>
+
+  <!-- Info banner -->
+  <div class="bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 mb-6 flex items-start gap-3">
+    <svg class="w-4 h-4 text-violet-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <p class="text-xs text-violet-800">These defaults apply to <strong>all new invitations</strong> at each trust level. Members with custom access settings are not affected. Owner and Co-Owner always have full access to all domains and cannot be restricted.</p>
+  </div>
+
+  <!-- ── PERMISSION MATRIX ── -->
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
+
+    <!-- Card header -->
+    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div>
+        <h2 class="text-sm font-semibold text-gray-900">Trust Level Defaults</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Click a permission to change it. Owner and Co-Owner are always full access.</p>
+      </div>
+      <button onclick="resetToDefaults()" class="text-xs text-gray-500 hover:text-gray-800 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">Reset all</button>
+    </div>
+
+    <!-- Matrix -->
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[640px]">
+        <thead>
+          <tr class="border-b border-gray-100 bg-gray-50/40">
+            <th class="text-left px-5 py-3 w-52">
+              <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Level</span>
+            </th>
+            <th class="px-4 py-3 text-center w-36">
+              <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                </div>
+                <span class="text-xs font-semibold text-gray-600">Vault</span>
+              </div>
+            </th>
+            <th class="px-4 py-3 text-center w-36">
+              <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="text-xs font-semibold text-gray-600">Wealth</span>
+              </div>
+            </th>
+            <th class="px-4 py-3 text-center w-36">
+              <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <span class="text-xs font-semibold text-gray-600">Legacy</span>
+              </div>
+            </th>
+            <th class="px-4 py-3 text-center w-36">
+              <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center">
+                  <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                </div>
+                <span class="text-xs font-semibold text-gray-600">Health</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Owner (locked) -->
+          <tr class="border-b border-gray-50 locked-row">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">Owner</p>
+                  <p class="text-xs text-gray-400">1 member · Full control</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-4 text-center"><span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1.5 rounded-lg cursor-not-allowed select-none"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Full</span></td>
+            <td class="px-4 py-4 text-center"><span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1.5 rounded-lg cursor-not-allowed select-none"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Full</span></td>
+            <td class="px-4 py-4 text-center"><span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1.5 rounded-lg cursor-not-allowed select-none"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Full</span></td>
+            <td class="px-4 py-4 text-center"><span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1.5 rounded-lg cursor-not-allowed select-none"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Full</span></td>
+          </tr>
+
+          <!-- Co-Owner (locked) -->
+          <tr class="border-b border-gray-50 locked-row">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">Co-Owner</p>
+                  <p class="text-xs text-gray-400">1 member · Full control</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-4 text-center"><span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1.5 rounded-lg cursor-not-allowed select-none"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Full</span></td>
+            <td class="px-4 py-4 text-center"><span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1.5 rounded-lg cursor-not-allowed select-none"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Full</span></td>
+            <td class="px-4 py-4 text-center"><span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1.5 rounded-lg cursor-not-allowed select-none"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Full</span></td>
+            <td class="px-4 py-4 text-center"><span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1.5 rounded-lg cursor-not-allowed select-none"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Full</span></td>
+          </tr>
+
+          <!-- Collaborator (interactive) -->
+          <tr class="border-b border-gray-50">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">Collaborator</p>
+                  <p class="text-xs text-gray-400">2 members · <span class="text-amber-600">1 custom</span></p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-4 text-center"><div id="cell-collaborator-vault"></div></td>
+            <td class="px-4 py-4 text-center"><div id="cell-collaborator-wealth"></div></td>
+            <td class="px-4 py-4 text-center"><div id="cell-collaborator-legacy"></div></td>
+            <td class="px-4 py-4 text-center"><div id="cell-collaborator-health"></div></td>
+          </tr>
+
+          <!-- Viewer (interactive) -->
+          <tr>
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">Viewer</p>
+                  <p class="text-xs text-gray-400">1 member · <span class="text-amber-600">1 custom</span></p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-4 text-center"><div id="cell-viewer-vault"></div></td>
+            <td class="px-4 py-4 text-center"><div id="cell-viewer-wealth"></div></td>
+            <td class="px-4 py-4 text-center"><div id="cell-viewer-legacy"></div></td>
+            <td class="px-4 py-4 text-center"><div id="cell-viewer-health"></div></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Matrix footer -->
+    <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+      <p class="text-xs text-gray-400">Changes apply to all future invitations at that level. Existing members with custom access are not affected.</p>
+      <div id="change-indicator" class="hidden text-xs font-medium text-violet-600">Unsaved changes</div>
+    </div>
+  </div>
+
+  <!-- ── PERMISSION LEGEND ── -->
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
+    <button onclick="toggleLegend()" class="w-full px-5 py-3.5 flex items-center justify-between text-left">
+      <span class="text-sm font-medium text-gray-700">What do these permission levels mean?</span>
+      <svg id="legend-chevron" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+    <div id="legend-body" class="hidden border-t border-gray-100">
+      <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="flex items-start gap-3">
+          <span class="inline-flex items-center gap-1 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-200 px-2.5 py-1.5 rounded-lg flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            Edit
+          </span>
+          <p class="text-xs text-gray-500">Can view, upload, organize, and edit files. Can invite Viewers to this domain. Cannot delete the domain or change other members' access.</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded-lg flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            View
+          </span>
+          <p class="text-xs text-gray-500">Can view and download files only. Cannot make changes, upload, or invite others. Read-only access to the domain.</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-lg flex-shrink-0 mt-0.5">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            No Access
+          </span>
+          <p class="text-xs text-gray-500">Domain is hidden entirely. The member cannot see this section exists or request access from within the app.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── INDIVIDUAL EXCEPTIONS ── -->
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
+    <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div>
+        <h2 class="text-sm font-semibold text-gray-900">Individual Exceptions</h2>
+        <p class="text-xs text-gray-400 mt-0.5">These members have custom access that differs from their level's defaults above.</p>
+      </div>
+      <span class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">2 exceptions</span>
+    </div>
+
+    <!-- Sophie -->
+    <div class="px-5 py-4 border-b border-gray-100">
+      <div class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-semibold text-sm flex-shrink-0">SJ</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <p class="text-sm font-medium text-gray-900">Sophie Johnson</p>
+            <span class="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Collaborator</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-2">
+            <span class="inline-flex items-center gap-1 text-xs font-medium text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              Vault
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs font-medium text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              Legacy
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              Wealth
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              Health
+            </span>
+          </div>
+          <p class="text-xs text-gray-400">Differs from Collaborator default: Wealth is No Access (default: Edit)</p>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <button onclick="resetMemberToDefault('sophie')" class="text-xs text-gray-500 hover:text-gray-800 border border-gray-200 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">Reset to default</button>
+          <button class="text-xs text-violet-600 hover:text-violet-800 border border-violet-200 px-2.5 py-1.5 rounded-lg hover:bg-violet-50 transition-colors">Edit access</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grace Miller (Viewer) -->
+    <div class="px-5 py-4">
+      <div class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-semibold text-sm flex-shrink-0">GM</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1.5">
+            <p class="text-sm font-medium text-gray-900">Grace Miller</p>
+            <span class="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">⏳ Pending</span>
+            <span class="text-xs text-slate-600 font-medium bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">Viewer</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-2">
+            <span class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              Legacy
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              Vault
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              Wealth
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              Health
+            </span>
+          </div>
+          <p class="text-xs text-gray-400">Differs from Viewer default: Legacy is View (default: No Access), Vault is No Access (default: View)</p>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <button onclick="resetMemberToDefault('grace')" class="text-xs text-gray-500 hover:text-gray-800 border border-gray-200 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">Reset to default</button>
+          <button class="text-xs text-violet-600 hover:text-violet-800 border border-violet-200 px-2.5 py-1.5 rounded-lg hover:bg-violet-50 transition-colors">Edit access</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+
+<!-- ── FLOATING PERMISSION PICKER ── -->
+<div id="cell-menu" class="hidden fixed z-50 bg-white rounded-xl border border-gray-200 shadow-xl w-44 py-1.5 perm-menu">
+  <div class="px-3 py-1 text-xs text-gray-400 font-medium" id="cell-menu-label">Permission</div>
+  <div class="border-t border-gray-100 my-1"></div>
+  <div id="cell-menu-options"></div>
+</div>
+
+
+<!-- ── STICKY SAVE BAR ── -->
+<div id="save-bar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 save-bar">
+  <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div>
+      <p class="text-sm font-medium text-gray-900"><span id="pending-count">0</span> change<span id="pending-plural">s</span> pending</p>
+      <p class="text-xs text-gray-400 mt-0.5">These defaults won't apply to existing members with custom settings.</p>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="discardChanges()" class="text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">Discard</button>
+      <button onclick="saveChanges()" class="text-sm px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-medium transition-colors">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 fade-in">
+  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+  <span id="toast-msg">Changes saved</span>
+</div>
+
+<script>
+// ── State ──
+const defaultConfig = {
+  collaborator: { vault: 'edit', wealth: 'edit', legacy: 'edit', health: 'none' },
+  viewer:       { vault: 'view', wealth: 'none', legacy: 'none', health: 'none' }
+};
+
+let config = JSON.parse(JSON.stringify(defaultConfig));
+let savedConfig = JSON.parse(JSON.stringify(defaultConfig));
+let pendingChanges = 0;
+
+// ── Permission metadata ──
+const perms = {
+  edit: {
+    label: 'Edit',
+    classes: 'bg-violet-50 text-violet-700 border border-violet-200',
+    icon: `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>`,
+  },
+  view: {
+    label: 'View',
+    classes: 'bg-blue-50 text-blue-600 border border-blue-200',
+    icon: `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`,
+  },
+  none: {
+    label: 'No Access',
+    classes: 'bg-gray-50 text-gray-400 border border-gray-200',
+    icon: `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>`,
+  }
+};
+
+const domains = ['vault', 'wealth', 'legacy', 'health'];
+const domainLabels = { vault: 'Vault', wealth: 'Wealth', legacy: 'Legacy', health: 'Health' };
+const levels = ['collaborator', 'viewer'];
+const levelOptions = { collaborator: ['edit', 'view', 'none'], viewer: ['view', 'none'] };
+
+// ── Initial render ──
+function renderAllCells() {
+  levels.forEach(level => {
+    domains.forEach(domain => renderCell(level, domain));
+  });
+}
+
+function renderCell(level, domain) {
+  const el = document.getElementById(`cell-${level}-${domain}`);
+  if (!el) return;
+  const perm = config[level][domain];
+  const p = perms[perm];
+  const isChanged = config[level][domain] !== savedConfig[level][domain];
+  el.innerHTML = `
+    <button
+      class="cell-btn inline-flex items-center gap-1.5 text-xs font-semibold ${p.classes} px-2.5 py-1.5 rounded-lg ${isChanged ? 'ring-2 ring-violet-300' : ''}"
+      onclick="openCellMenu(this, '${level}', '${domain}')"
+    >
+      ${p.icon}
+      ${p.label}
+      <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+  `;
+}
+
+// ── Cell menu ──
+let activeMenu = null;
+
+function openCellMenu(btn, level, domain) {
+  closeAllMenus();
+  activeMenu = { level, domain };
+
+  const menu = document.getElementById('cell-menu');
+  const label = document.getElementById('cell-menu-label');
+  const options = document.getElementById('cell-menu-options');
+
+  label.textContent = `${level.charAt(0).toUpperCase() + level.slice(1)} · ${domainLabels[domain]}`;
+
+  options.innerHTML = levelOptions[level].map(opt => {
+    const p = perms[opt];
+    const isCurrent = config[level][domain] === opt;
+    return `
+      <button onclick="setPermission('${level}', '${domain}', '${opt}')"
+        class="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-gray-50 transition-colors ${isCurrent ? 'opacity-100' : 'opacity-70 hover:opacity-100'}">
+        <span class="inline-flex items-center gap-1 text-xs font-semibold ${p.classes} px-2 py-1 rounded-md">${p.icon} ${p.label}</span>
+        ${isCurrent ? `<svg class="w-3.5 h-3.5 text-violet-500 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>` : ''}
+      </button>
+    `;
+  }).join('');
+
+  const rect = btn.getBoundingClientRect();
+  menu.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+  menu.style.left = Math.max(8, rect.left + window.scrollX - 16) + 'px';
+  menu.classList.remove('hidden');
+
+  setTimeout(() => document.addEventListener('click', closeAllMenus, { once: true }), 0);
+}
+
+function closeAllMenus() {
+  document.getElementById('cell-menu').classList.add('hidden');
+  activeMenu = null;
+}
+
+function setPermission(level, domain, perm) {
+  config[level][domain] = perm;
+  renderCell(level, domain);
+  updateChangeTracking();
+  closeAllMenus();
+}
+
+// ── Change tracking ──
+function updateChangeTracking() {
+  let count = 0;
+  levels.forEach(level => {
+    domains.forEach(domain => {
+      if (config[level][domain] !== savedConfig[level][domain]) count++;
+    });
+  });
+  pendingChanges = count;
+
+  const saveBar = document.getElementById('save-bar');
+  const changeIndicator = document.getElementById('change-indicator');
+  const pendingCount = document.getElementById('pending-count');
+  const pendingPlural = document.getElementById('pending-plural');
+
+  pendingCount.textContent = count;
+  pendingPlural.textContent = count === 1 ? '' : 's';
+
+  if (count > 0) {
+    saveBar.classList.remove('hidden');
+    changeIndicator.classList.remove('hidden');
+  } else {
+    saveBar.classList.add('hidden');
+    changeIndicator.classList.add('hidden');
+  }
+}
+
+function saveChanges() {
+  savedConfig = JSON.parse(JSON.stringify(config));
+  updateChangeTracking();
+  renderAllCells();
+  showToast('Access defaults saved');
+}
+
+function discardChanges() {
+  config = JSON.parse(JSON.stringify(savedConfig));
+  renderAllCells();
+  updateChangeTracking();
+}
+
+function resetToDefaults() {
+  config = JSON.parse(JSON.stringify(defaultConfig));
+  renderAllCells();
+  updateChangeTracking();
+}
+
+// ── Member reset (mock) ──
+function resetMemberToDefault(member) {
+  const el = member === 'sophie'
+    ? document.querySelector('[onclick="resetMemberToDefault(\'sophie\')"]').closest('.py-4')
+    : document.querySelector('[onclick="resetMemberToDefault(\'grace\')"]').closest('.py-4');
+  el.style.opacity = '0.5';
+  setTimeout(() => {
+    el.style.opacity = '';
+    showToast(`${member === 'sophie' ? 'Sophie Johnson' : 'Grace Miller'} reset to level defaults`);
+  }, 400);
+}
+
+// ── Legend toggle ──
+function toggleLegend() {
+  const body = document.getElementById('legend-body');
+  const chevron = document.getElementById('legend-chevron');
+  body.classList.toggle('hidden');
+  chevron.style.transform = body.classList.contains('hidden') ? '' : 'rotate(180deg)';
+}
+
+// ── Toast ──
+function showToast(msg) {
+  document.getElementById('toast-msg').textContent = msg;
+  const toast = document.getElementById('toast');
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+// ── Init ──
+renderAllCells();
+</script>
+</body>
+</html>

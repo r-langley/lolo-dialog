@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lolo — Consumer: My Access</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #f5f5f7; }
+  .fade-in { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .doc-card { transition: all 0.15s; }
+  .doc-card:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,0.07); }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Top Nav — minimal, consumer focused -->
+<nav class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+  <div class="flex items-center gap-2.5">
+    <div class="w-7 h-7 rounded-lg bg-blue-500 flex items-center justify-center text-white font-bold text-sm">L</div>
+    <span class="font-semibold text-gray-900 text-sm">Lolo</span>
+  </div>
+  <div class="flex items-center gap-3">
+    <button onclick="showRequestModal()" class="text-xs font-medium text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+      Request Access
+    </button>
+    <div class="w-7 h-7 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-semibold text-xs">GM</div>
+  </div>
+</nav>
+
+<!-- Greeting Banner -->
+<div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-5 py-5">
+  <p class="text-sm text-blue-100">Shared with you</p>
+  <h1 class="text-xl font-semibold mt-0.5">Hi Grace 👋</h1>
+  <p class="text-sm text-blue-100 mt-1">You have access to files from <span class="text-white font-medium">Johnson Household</span></p>
+</div>
+
+<div class="max-w-lg mx-auto px-4 py-6">
+
+  <!-- Access Summary Pill -->
+  <div class="flex items-center gap-2 mb-6 flex-wrap">
+    <div class="flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-full px-3 py-1.5">
+      <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+      Vault — View only
+    </div>
+    <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+      Wealth — No access
+    </div>
+    <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+      Legacy — No access
+    </div>
+  </div>
+
+  <!-- Shared Documents -->
+  <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Shared with You</h2>
+  <div class="flex flex-col gap-3 mb-8">
+
+    <div class="doc-card bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3.5 cursor-pointer">
+      <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-gray-900 truncate">Estate Plan Summary.pdf</p>
+        <p class="text-xs text-gray-400 mt-0.5">Shared Feb 14 · Vault</p>
+      </div>
+      <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </div>
+
+    <div class="doc-card bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3.5 cursor-pointer">
+      <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-gray-900 truncate">Insurance Policy — Home.pdf</p>
+        <p class="text-xs text-gray-400 mt-0.5">Shared Jan 28 · Vault</p>
+      </div>
+      <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </div>
+
+    <div class="doc-card bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3.5 cursor-pointer">
+      <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-gray-900 truncate">Family Photo Archive</p>
+        <p class="text-xs text-gray-400 mt-0.5">Shared Jan 15 · Vault</p>
+      </div>
+      <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </div>
+  </div>
+
+  <!-- Locked Sections -->
+  <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Not Shared with You</h2>
+  <div class="flex flex-col gap-2 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3.5 opacity-60">
+      <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+      </div>
+      <div class="flex-1">
+        <p class="text-sm font-medium text-gray-600">Wealth — Accounts & Investments</p>
+        <p class="text-xs text-gray-400 mt-0.5">You don't have access to this section</p>
+      </div>
+      <button onclick="showRequestModal('Wealth')" class="text-xs text-blue-500 font-medium hover:text-blue-700 flex-shrink-0">Request</button>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3.5 opacity-60">
+      <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+      </div>
+      <div class="flex-1">
+        <p class="text-sm font-medium text-gray-600">Legacy — Estate Planning</p>
+        <p class="text-xs text-gray-400 mt-0.5">You don't have access to this section</p>
+      </div>
+      <button onclick="showRequestModal('Legacy')" class="text-xs text-blue-500 font-medium hover:text-blue-700 flex-shrink-0">Request</button>
+    </div>
+  </div>
+
+  <!-- Pending Requests -->
+  <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Pending Requests</h2>
+  <div id="pending-section" class="bg-white rounded-xl border border-gray-200 p-4 text-center text-sm text-gray-400">
+    No pending access requests
+  </div>
+
+</div>
+
+<!-- ─── MODAL: REQUEST ACCESS ─── -->
+<div id="modal-request" class="hidden fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
+  <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm fade-in overflow-hidden">
+    <div class="px-5 pt-5 pb-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-semibold text-gray-900">Request Access</h2>
+        <button onclick="closeRequest()" class="text-gray-400 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <p class="text-sm text-gray-500 mb-4">David and Emma Johnson will be notified of your request.</p>
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-gray-700 mb-1.5">Section</label>
+        <select id="request-section" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400">
+          <option value="Vault">Vault — Documents</option>
+          <option value="Wealth">Wealth — Accounts</option>
+          <option value="Legacy">Legacy — Estate Planning</option>
+          <option value="Health">Health — Medical</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-1.5">Reason <span class="text-gray-400 font-normal">(optional)</span></label>
+        <textarea id="request-reason" rows="3" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 resize-none" placeholder="Why do you need access?"></textarea>
+      </div>
+    </div>
+    <div class="px-5 py-4 border-t border-gray-100 flex gap-2">
+      <button onclick="closeRequest()" class="flex-1 text-sm py-2.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+      <button onclick="submitRequest()" class="flex-1 text-sm py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors">Send Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-3 rounded-xl shadow-xl flex items-center gap-2.5 z-50 fade-in whitespace-nowrap">
+  <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+  Request sent to Johnson Household
+</div>
+
+<script>
+function showRequestModal(section) {
+  if (section) document.getElementById('request-section').value = section;
+  document.getElementById('modal-request').classList.remove('hidden');
+}
+function closeRequest() {
+  document.getElementById('modal-request').classList.add('hidden');
+}
+function submitRequest() {
+  const section = document.getElementById('request-section').value;
+  closeRequest();
+  // Add to pending section
+  const pending = document.getElementById('pending-section');
+  pending.innerHTML = `
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium text-gray-900 text-left">${section} access</p>
+        <p class="text-xs text-gray-400 text-left mt-0.5">Requested just now · Awaiting approval</p>
+      </div>
+      <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">Pending</span>
+    </div>
+  `;
+  const toast = document.getElementById('toast');
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+</script>
+</body>
+</html>
