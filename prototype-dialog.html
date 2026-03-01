@@ -584,6 +584,46 @@
   }
   .flow-btn:hover { background: var(--lavender-100); border-color: var(--lavender-200); color: var(--text-primary); }
   .flow-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .dialog {
+      width: calc(100vw - 32px);
+      bottom: 16px;
+      max-width: 640px;
+    }
+    .dev-panel {
+      left: 16px;
+      right: 16px;
+      min-width: auto;
+      max-width: calc(100vw - 32px);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .dialog {
+      width: calc(100vw - 16px);
+      bottom: 8px;
+      border-radius: var(--r-xl);
+    }
+    .suggestions-row {
+      flex-direction: column;
+      gap: var(--sp-2);
+    }
+    .suggestion-chip {
+      width: 100%;
+    }
+    .dev-panel {
+      left: 8px;
+      right: 8px;
+      top: 52px;
+      max-height: calc(100vh - 60px);
+    }
+    .dev-toggle {
+      left: 8px;
+      top: 8px;
+    }
+  }
 </style>
 </head>
 <body>
