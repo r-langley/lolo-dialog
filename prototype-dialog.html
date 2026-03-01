@@ -65,7 +65,7 @@
     bottom: 32px;
     left: 50%;
     transform: translateX(-50%);
-    width: 640px;
+    width: min(640px, calc(100vw - 32px));
     background: var(--white);
     border-radius: var(--r-2xl);
     box-shadow: var(--shadow-xl);
@@ -74,6 +74,31 @@
     display: flex;
     flex-direction: column;
     transition: border-radius 0.3s ease, box-shadow 0.3s ease, bottom 0.3s ease, width 0.3s ease;
+  }
+
+  @media (max-width: 520px) {
+    .dialog {
+      bottom: 16px;
+    }
+    .suggestions-row {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .suggestions-row::-webkit-scrollbar { display: none; }
+    .suggestion-chip {
+      flex: 0 0 auto;
+      min-width: 160px;
+    }
+    .action-suggestions {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .action-suggestions::-webkit-scrollbar { display: none; }
+    .action-chip { flex-shrink: 0; }
   }
 
   .dialog.fullscreen {
