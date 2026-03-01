@@ -275,19 +275,24 @@ function loadTemplate() {
 }
 
 function testFlow() {
+  console.log('testFlow() called');
   const jsonText = document.getElementById('jsonEditor').value;
   const errorDiv = document.getElementById('error');
   if (errorDiv) errorDiv.remove();
 
   try {
     const flowData = JSON.parse(jsonText);
-    
+    console.log('Flow data parsed:', flowData);
+
     // Store flow data in localStorage for preview page to access
     localStorage.setItem('playgroundFlow', JSON.stringify(flowData));
-    
+    console.log('Stored in localStorage');
+
     // Load preview page
-    document.getElementById('previewFrame').src = './_playground-preview.html?t=' + Date.now();
-    
+    const previewSrc = './_playground-preview.html?t=' + Date.now();
+    console.log('Loading preview:', previewSrc);
+    document.getElementById('previewFrame').src = previewSrc;
+
   } catch (e) {
     const errorDiv = document.createElement('div');
     errorDiv.id = 'error';
