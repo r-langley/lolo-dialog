@@ -160,25 +160,41 @@ export class DialogFlow {
 
   _renderSuggestions(step) {
     const container = document.querySelector('[data-section="initial"]');
-    if (!container) return;
+    if (!container) {
+      console.error('Container [data-section="initial"] not found');
+      return;
+    }
 
-    container.innerHTML = step.options.map(o => `
-      <div class="suggestion-chip" onclick="window.activeFlow && window.activeFlow.advance('${o.value}')">
+    container.innerHTML = step.options.map((o, i) => `
+      <div class="suggestion-chip" data-option-index="${i}">
         ${o.icon ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${o.icon}</svg>` : ''}
         <span>${o.label}</span>
       </div>`).join('');
+
+    // Add click listeners
+    container.querySelectorAll('.suggestion-chip').forEach((chip, i) => {
+      chip.addEventListener('click', () => {
+        console.log('Suggestion chip clicked:', step.options[i].value);
+        this.advance(step.options[i].value);
+      });
+    });
+
     container.classList.add('visible');
+    console.log('Rendered', step.options.length, 'suggestion chips');
   }
 
   _renderResults(step) {
     const container = document.querySelector('[data-section="response"]');
-    if (!container) return;
+    if (!container) {
+      console.error('Container [data-section="response"] not found');
+      return;
+    }
 
     container.innerHTML = step.results.map((r, i) => {
       // Detailed result row (multi-line with badges)
       if (r.detailed) {
         return `
-          <div class="result-row detailed fade-in" style="animation-delay:${i*0.1}s" onclick="window.activeFlow && window.activeFlow.advance('${r.id}')">
+          <div class="result-row detailed fade-in" style="animation-delay:${i*0.1}s" data-result-id="${r.id}">
             <div class="result-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
@@ -198,7 +214,7 @@ export class DialogFlow {
 
       // Simple result row
       return `
-        <div class="result-row fade-in" style="animation-delay:${i*0.1}s" onclick="window.activeFlow && window.activeFlow.advance('${r.id}')">
+        <div class="result-row fade-in" style="animation-delay:${i*0.1}s" data-result-id="${r.id}">
           <div class="result-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
@@ -210,12 +226,26 @@ export class DialogFlow {
           </div>
         </div>`;
     }).join('');
+
+    // Add click listeners
+    container.querySelectorAll('.result-row').forEach(row => {
+      const resultId = row.getAttribute('data-result-id');
+      row.addEventListener('click', () => {
+        console.log('Result row clicked:', resultId);
+        this.advance(resultId);
+      });
+    });
+
     container.classList.add('visible');
+    console.log('Rendered', step.results.length, 'result rows');
   }
 
   _renderCanvas(step) {
     const container = document.querySelector('[data-section="canvas"]');
-    if (!container) return;
+    if (!container) {
+      console.error('Container [data-section="canvas"] not found');
+      return;
+    }
 
     container.innerHTML = `
       <div class="doc-card fade-in">
@@ -235,10 +265,25 @@ export class DialogFlow {
         </div>
         <div class="doc-info">
           <div class="doc-title">${step.docName || 'Document Name'}</div>
-          <button class="doc-action-btn" onclick="window.activeFlow ? (window.activeFlow.advance('${step.actionValue||'confirm'}'), window.triggerSuccess()) : window.triggerSuccess()">${step.actionLabel || 'Confirm'}</button>
+          <button class="doc-action-btn">${step.actionLabel || 'Confirm'}</button>
         </div>
       </div>`;
+
+    // Add click listener to action button
+    const actionBtn = container.querySelector('.doc-action-btn');
+    if (actionBtn) {
+      actionBtn.addEventListener('click', () => {
+        console.log('Canvas action button clicked');
+        this.advance(step.actionValue || 'confirm');
+        // Trigger success if available
+        if (window.triggerSuccess) {
+          window.triggerSuccess();
+        }
+      });
+    }
+
     container.classList.add('visible');
+    console.log('Rendered canvas with action:', step.actionLabel);
   }
 }
 

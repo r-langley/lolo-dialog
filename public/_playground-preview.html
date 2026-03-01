@@ -52,6 +52,16 @@
   </div>
 </div>
 
+<script>
+// Global error handler to catch any errors
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+  console.error('Global error:', msg, url, lineNo, columnNo, error);
+  document.getElementById('headerText').textContent = 'Error: ' + msg;
+  document.getElementById('headerText').style.color = 'red';
+  return false;
+};
+</script>
+
 <script type="module">
 import { DialogFlow } from './lib/dialog-engine.js';
 
