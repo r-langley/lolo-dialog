@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lolo Dialog UI Kit — Component Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #ffffff;
+    --canvas: #f6f5f2;
+    --neutral-50: #ffffff;
+    --neutral-100: #f6f5f2;
+    --neutral-200: #f0eee6;
+    --neutral-800: #3d3935;
+    --text-primary: #3d3935;
+    --text-secondary: #6b665f;
+    --text-tertiary: #938d85;
+    --borders-default: #f0eee6;
+    --lavender-100: #f0ecfa;
+    --lavender-200: #e0d9f4;
+    --lavender-500: #a599d9;
+    --lavender-700: #7e6fca;
+    --lavender-800: #6457a6;
+    --user-bubble: #4E7195;
+    --user-bubble-dark: #3d5a76;
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-6: 24px; --sp-8: 32px;
+    --r-sm: 4px; --r-md: 6px; --r-lg: 8px; --r-xl: 12px; --r-2xl: 16px; --r-full: 9999px;
+    --shadow-xxs: 0px 1px 1px rgba(16,24,40,0.07), 1px 1px 2px rgba(0,0,0,0.04);
+    --shadow-xl: 0px 12px 24px 4px rgba(16,24,40,0.07);
+    --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--canvas);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--sp-8);
+  }
+
+  header {
+    margin-bottom: var(--sp-8);
+  }
+
+  h1 {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: var(--sp-3);
+  }
+
+  .subtitle {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-6);
+  }
+
+  .nav {
+    display: flex;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-8);
+  }
+
+  .nav a {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4);
+    background: var(--white);
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-lg);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.12s ease;
+  }
+
+  .nav a:hover {
+    background: var(--lavender-100);
+    border-color: var(--lavender-200);
+    color: var(--text-primary);
+  }
+
+  .section {
+    margin-bottom: var(--sp-8);
+  }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: var(--sp-4);
+  }
+
+  .component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--sp-6);
+  }
+
+  .component-card {
+    background: var(--white);
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-xl);
+    padding: var(--sp-6);
+  }
+
+  .component-header {
+    margin-bottom: var(--sp-4);
+  }
+
+  .component-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: var(--sp-1);
+  }
+
+  .component-category {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--lavender-700);
+    background: var(--lavender-100);
+    padding: 2px 8px;
+    border-radius: var(--r-sm);
+  }
+
+  .component-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: var(--sp-2);
+  }
+
+  .component-preview {
+    background: var(--canvas);
+    border-radius: var(--r-lg);
+    padding: var(--sp-4);
+    margin-bottom: var(--sp-4);
+  }
+
+  .component-states {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: var(--sp-2);
+  }
+
+  /* Component examples */
+  .suggestion-chip {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: var(--white);
+  }
+  .suggestion-chip:hover { background: var(--lavender-100); border-color: var(--lavender-200); }
+  .suggestion-chip svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-secondary); }
+  .suggestion-chip span { font-size: 12px; font-weight: 400; color: var(--text-secondary); }
+
+  .action-chip {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--borders-default);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    transition: all 0.12s ease;
+    background: transparent;
+  }
+  .action-chip:hover { background: var(--lavender-100); border-color: var(--lavender-200); }
+  .action-chip svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-secondary); }
+  .action-chip span { font-size: 12px; color: var(--text-secondary); }
+
+  .user-bubble {
+    display: inline-block;
+    background: var(--user-bubble);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 20px;
+    padding: 10px 16px;
+    border-radius: 20px 20px 4px 20px;
+    max-width: 85%;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+  .result-row:hover { background: var(--lavender-100); }
+  .result-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-tertiary); }
+  .result-content { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .result-quote { font-size: 14px; color: var(--text-primary); }
+  .result-source { font-size: 12px; color: var(--text-secondary); }
+
+  .result-row.detailed {
+    align-items: flex-start;
+  }
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .result-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .result-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .result-badge.current { background: #e8f5e9; color: #2e7d32; }
+  .result-badge.archived { background: var(--neutral-200); color: var(--text-secondary); }
+  .result-badge.role { background: var(--lavender-100); color: var(--lavender-700); }
+  .result-details { font-size: 13px; color: var(--text-primary); }
+  .result-meta { font-size: 12px; color: var(--text-tertiary); }
+
+  footer {
+    margin-top: var(--sp-8);
+    padding-top: var(--sp-6);
+    border-top: 1px solid var(--borders-default);
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+
+  footer a {
+    color: var(--lavender-700);
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Lolo Dialog UI Kit</h1>
+    <p class="subtitle">Generative component library for conversational interfaces</p>
+
+    <div class="nav">
+      <a href="./playground.html">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/>
+        </svg>
+        Playground
+      </a>
+      <a href="./examples/demo-flows.html">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="8" cy="8" r="6"/><path d="M6 6l4 2-4 2z"/>
+        </svg>
+        Demo Flows
+      </a>
+      <a href="./README-AI.md">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M11 2H3a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V5z"/><polyline points="11,2 11,5 14,5"/>
+        </svg>
+        AI Guide
+      </a>
+      <a href="https://github.com/r-langley/lolo-dialog" target="_blank">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Components</h2>
+
+    <div class="component-grid">
+      <!-- Suggestion Chip -->
+      <div class="component-card">
+        <div class="component-header">
+          <div class="component-name">Suggestion Chip</div>
+          <span class="component-category">Buttons</span>
+          <div class="component-desc">Interactive suggestion button with icon and label</div>
+        </div>
+        <div class="component-states">States: default, hover</div>
+        <div class="component-preview">
+          <div class="suggestion-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+            </svg>
+            <span>Create or upload a document</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Chip -->
+      <div class="component-card">
+        <div class="component-header">
+          <div class="component-name">Action Chip</div>
+          <span class="component-category">Buttons</span>
+          <div class="component-desc">Secondary action button with icon and label</div>
+        </div>
+        <div class="component-states">States: default, hover</div>
+        <div class="component-preview">
+          <div class="action-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+            </svg>
+            <span>Share this Document</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Bubble -->
+      <div class="component-card">
+        <div class="component-header">
+          <div class="component-name">User Message Bubble</div>
+          <span class="component-category">Messages</span>
+          <div class="component-desc">Right-aligned user message that hugs content</div>
+        </div>
+        <div class="component-states">Width: content-hugging (max 85%)</div>
+        <div class="component-preview" style="display: flex; justify-content: flex-end;">
+          <div class="user-bubble">Find Taylor Johnson</div>
+        </div>
+      </div>
+
+      <!-- Result Row (Simple) -->
+      <div class="component-card">
+        <div class="component-header">
+          <div class="component-name">Result Row (Simple)</div>
+          <span class="component-category">Results</span>
+          <div class="component-desc">Clickable result with icon, quote, and source</div>
+        </div>
+        <div class="component-states">States: default, hover</div>
+        <div class="component-preview">
+          <div class="result-row">
+            <div class="result-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+              </svg>
+            </div>
+            <div class="result-content">
+              <span class="result-quote">My brother, <strong>Taylor Johnson</strong>, will…</span>
+              <span class="result-source">Found in <strong>Power of Attorney</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Row (Detailed) -->
+      <div class="component-card">
+        <div class="component-header">
+          <div class="component-name">Result Row (Detailed)</div>
+          <span class="component-category">Results</span>
+          <div class="component-desc">Multi-line result with badges and metadata</div>
+        </div>
+        <div class="component-states">Status: current, archived | Role badges</div>
+        <div class="component-preview">
+          <div class="result-row detailed">
+            <div class="result-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>
+              </svg>
+            </div>
+            <div class="result-content">
+              <div class="result-header">
+                <span class="result-title">Living Will, 2024</span>
+                <span class="result-badge archived">Archived</span>
+                <span class="result-badge role">Witness</span>
+              </div>
+              <div class="result-details">Taylor was listed as a witness to this will</div>
+              <div class="result-meta">This will is no longer current</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>Lolo Dialog UI Kit v1.3.0</strong></p>
+    <p>JSON-driven component library for AI-powered conversational interfaces</p>
+    <p style="margin-top: var(--sp-2);">
+      <a href="./DESIGN_SYSTEM.md">Design System</a> ·
+      <a href="./README-AI.md">AI Guide</a> ·
+      <a href="./lib/components.json">Components JSON</a> ·
+      <a href="https://github.com/r-langley/lolo-dialog">GitHub</a>
+    </p>
+  </footer>
+</div>
+
+</body>
+</html>
